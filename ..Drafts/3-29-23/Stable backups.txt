@@ -1,22 +1,3 @@
-// Firebase initialization
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-analytics.js";
-
-// TODO: Replace the following with your app's Firebase project configuration
-// See: https://firebase.google.com/docs/web/learn-more#config-object
-const firebaseConfig = {
-  apiKey: "AIzaSyDIcSlBjSKVY-SJmDh_RtRXuuB29LdpRyQ",
-  authDomain: "deeper-paths.firebaseapp.com",
-  databaseURL: "https://deeper-paths-default-rtdb.firebaseio.com",
-  projectId: "deeper-paths",
-  storageBucket: "deeper-paths.appspot.com",
-  messagingSenderId: "494030260010",
-  appId: "1:494030260010:web:29aaf47310af25555b0053",
-  measurementId: "G-LC45VYLJ4C"
-};
-
-firebase.initializeApp(firebaseConfig);
-
 // Defining constants and giving the cards values
 const cards = [
   "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",
@@ -24,13 +5,6 @@ const cards = [
   "A♦", "2♦", "3♦", "4♦", "5♦", "6♦", "7♦", "8♦", "9♦", "10♦", "J♦", "Q♦", "K♦",
   "A♣", "2♣", "3♣", "4♣", "5♣", "6♣", "7♣", "8♣", "9♣", "10♣", "J♣", "Q♣", "K♣"
 ];
-let totalScore = 0;
-let suitScores = {
-  "♥": 0,
-  "♠": 0,
-  "♦": 0,
-  "♣": 0
-  };
 
 //*********************PREPARING GAMEBOARD*********************** */
   // Shuffle the cards using the Fisher-Yates algorithm
@@ -92,7 +66,6 @@ function resetGameBoard() {
       messageBox.remove();
     }
 
-  // Reset both the total and suit scores to 0
   totalScore = 0;
   suitScores = {
     "♥": 0,
@@ -101,25 +74,19 @@ function resetGameBoard() {
     "♣": 0
   };
 
-  // Reseting card states
   const cards = document.querySelectorAll('.card');
   cards.forEach(card => {
-    card.classList.remove('card-locked', 'card-valid', 'card-flipped'); // Removing all prior classes from the card
-    card.classList.add('card-invalid'); // Reseting the card stats to invalid
-    card.textContent = ''; // Clearing all card text content
-    if (card.classList.contains('card-selected')) { // Showing text content for all cards assigned card-selected classicfication ***CAN CHANGE THIS TO DETERMINE HOW LONG EACH CARD WILL SHOW THIS INFORMATION***
-      card.textContent = card.dataset.value; 
-    }
+    card.classList.remove('card-locked', 'card-valid', 'card-flipped');
+    card.classList.add('card-invalid');
+    card.textContent = '';
   });
 
-  // Validating the cards in row 1
   const row1Cards = document.querySelectorAll('.row[data-row="1"] .card');
   row1Cards.forEach(card => {
     card.classList.remove('card-invalid');
     card.classList.add('card-valid');
   });
 
-  // Updating scoreboard
   updateScoreboard();
 }
 
@@ -153,7 +120,14 @@ function startGame() {
   }
 
   // STEP 3: Update the scoreboard
-    function updateScoreboard() {
+  let totalScore = 0;
+  let suitScores = {
+    "♥": 0,
+    "♠": 0,
+    "♦": 0,
+    "♣": 0
+    };
+  function updateScoreboard() {
     // Update total score
     totalScore = Object.values(suitScores).reduce((acc, val) => acc + val, 0);
     document.getElementById("score-box").textContent = `Total score: ${totalScore}`;
@@ -285,16 +259,10 @@ function showEndGameMessage() {
   document.body.appendChild(messageBox);
 }
 
-// Enxecute ending game functions when called
+// End the game
 function endGame() {
-  // Assign the card-selected class to all cards that were flipped
-  const flippedCards = document.querySelectorAll('.card-flipped');
-  flippedCards.forEach(card => {
-    card.classList.add('card-selected');
-  });
-
   updateScoreTracker(currentGame, totalScore);   // Append scores to the scoretracker
-  updateSuitTracker(currentGame, suitScores);   // Append scores to the suittracker
+  updateSuitTracker(currentGame, suitScores);   // Append scores to the scoretracker
   
   if (currentGame === 10) {
     showEndGameMessage(); // Call the showEndGameMessage function if it's the last game

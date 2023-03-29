@@ -1,22 +1,3 @@
-// Firebase initialization
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-analytics.js";
-
-// TODO: Replace the following with your app's Firebase project configuration
-// See: https://firebase.google.com/docs/web/learn-more#config-object
-const firebaseConfig = {
-  apiKey: "AIzaSyDIcSlBjSKVY-SJmDh_RtRXuuB29LdpRyQ",
-  authDomain: "deeper-paths.firebaseapp.com",
-  databaseURL: "https://deeper-paths-default-rtdb.firebaseio.com",
-  projectId: "deeper-paths",
-  storageBucket: "deeper-paths.appspot.com",
-  messagingSenderId: "494030260010",
-  appId: "1:494030260010:web:29aaf47310af25555b0053",
-  measurementId: "G-LC45VYLJ4C"
-};
-
-firebase.initializeApp(firebaseConfig);
-
 // Defining constants and giving the cards values
 const cards = [
   "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",

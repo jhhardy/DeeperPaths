@@ -14,16 +14,53 @@
 		<button id="reset-btn">Reset Game</button>
 		<div class="content-container">
 			<div class="scoreboard-container">
-				<div class="scoreboard">
-					<div id="score-box">Total score: 0</div>
-					<div id="♥-score" class="heart">Hearts ♥: 0</div>
-					<div id="♦-score" class="diamond">Diamonds ♦: 0</div>
-					<div id="♠-score" class="spade">Spades ♠: 0</div>
-					<div id="♣-score" class="club">Clubs ♣: 0</div>
-				 </div>		  
+			  <div class="scoreboard">
+				<div id="score-box"><span class="total-score">Total score:</span> 0</div>
+				<div id="♥-score" class="heart">Hearts ♥: 0</div>
+				<div id="♦-score" class="diamond">Diamonds ♦: 0</div>
+				<div id="♠-score" class="spade">Spades ♠: 0</div>
+				<div id="♣-score" class="club">Clubs ♣: 0</div>
 			  </div>
+			  <div class="scoretracker-container">
+				<div class="scoretracker">
+				  <div id="game-1"> Game 1:</div>
+				  <div id="game-2">Game 2:</div>
+				  <div id="game-3">Game 3:</div>
+				  <div id="game-4">Game 4:</div>
+				  <div id="game-5"> Game 5:</div>
+				  <div id="game-6">Game 6:</div>
+				  <div id="game-7">Game 7:</div>
+				  <div id="game-8">Game 8:</div>
+				  <div id="game-9"> Game 9:</div>
+				  <div id="game-10">Game 10:</div>
+				</div>
+			  </div>
+			</div>	  
 		  <div class="game-board">
-			<div class="row">
+			<div class="row" data-row="1">
+				<div class="card"></div>
+				<div class="card"></div>
+				<div class="card"></div>
+			</div>
+			<div class="row" data-row="2">
+				<div class="card"></div>
+				<div class="card"></div>
+				<div class="card"></div>
+				<div class="card"></div>
+				<div class="card"></div>
+				<div class="card"></div>
+				<div class="card"></div>
+			</div>		  
+			<div class="row" data-row="3">
+			  <div class="card"></div>
+			  <div class="card"></div>
+			  <div class="card"></div>
+			  <div class="card"></div>
+			  <div class="card"></div>
+			  <div class="card"></div>
+			  <div class="card"></div>		
+			</div>
+			<div class="row" data-row="4">
 			  <div class="card"></div>
 			  <div class="card"></div>
 			  <div class="card"></div>
@@ -32,17 +69,7 @@
 			  <div class="card"></div>
 			  <div class="card"></div>
 			</div>
-			<div class="row">
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>			
-			</div>
-			<div class="row">
+			<div class="row" data-row="5">
 			  <div class="card"></div>
 			  <div class="card"></div>
 			  <div class="card"></div>
@@ -51,17 +78,7 @@
 			  <div class="card"></div>
 			  <div class="card"></div>
 			</div>
-			<div class="row">
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			  <div class="card"></div>
-			</div>
-			<div class="row">
+			<div class="row" data-row="6">
 			  <div class="card"></div>
 			  <div class="card"></div>
 			  <div class="card"></div>
@@ -70,8 +87,7 @@
 			  <div class="card"></div>
 			  <div class="card"></div>
 			</div>
-			<div class="row">
-			  <div class="card"></div>
+			<div class="row" data-row="7">
 			  <div class="card"></div>
 			  <div class="card"></div>
 			  <div class="card"></div>
@@ -80,7 +96,7 @@
 			  <div class="card"></div>
 			  <div class="card"></div>
 			</div>
-			<div class="row">
+			<div class="row" data-row="8">
 			  <div class="card"></div>
 			  <div class="card"></div>
 			  <div class="card"></div>
@@ -90,6 +106,8 @@
 			  <div class="card"></div>
 			</div>
 		</div>
+		<div id="message-box"></div>
+		<div id="error-box"></div>
 	  </main>
     <footer>
       <p>&copy; 2023 My Game Company</p>
