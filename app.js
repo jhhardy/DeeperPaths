@@ -14,20 +14,25 @@ firebase.initializeApp(firebaseConfig);
 
 console.log(firebase);
 
-// Create a new user
-firebase.auth().createUserWithEmailAndPassword("testuser@example.com", "password123")
-  .then((userCredential) => {
-    // Add data point to the database
-    const dbRef = firebase.database().ref("users/" + userCredential.user.uid);
-    dbRef.set({
-      name: "Test User",
-      email: "testuser@example.com",
-      age: 30
-    });
+// Get a reference to the Firebase Realtime Database
+const database = firebase.database();
+
+// Define the new user data
+const userId = "fakeUserId";
+const userAge = 30;
+const userData = {
+  age: userAge
+};
+
+// Add the new user data to the "users" collection in the database
+database.ref("users/" + userId).set(userData)
+  .then(() => {
+    console.log("New user added to database!");
   })
   .catch((error) => {
-    console.log(error);
+    console.error("Error adding new user to database: ", error);
   });
+
 
 // Defining constants and giving the cards values
 const cards = [
