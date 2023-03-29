@@ -12,32 +12,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-console.log(firebase);
-
-
-
-//////////////////////////////*TEST*//////////////////////////////
-// Get a reference to the Firebase Realtime Database
-const database = firebase.database();
-
-// Define the new user data
-const userId = "fakeUserId";
-const userAge = 30;
-const userData = {
-  age: userAge
-};
-
-// Add the new user data to the "users" collection in the database
-database.ref("users/" + userId).set(userData)
-  .then(() => {
-    console.log("New user added to database!");
-  })
-  .catch((error) => {
-    console.error("Error adding new user to database: ", error);
-  });
-  //////////////////////////////*TEST*//////////////////////////////
-
-
 // Defining constants and giving the cards values
 const cards = [
   "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",
@@ -106,6 +80,12 @@ function dealCards() {
 }
 
 //*********************STARTING GAME*********************** */
+function generateUserID() {
+  const timestamp = Date.now().toString();
+  const randomChars = Math.random().toString(36).substring(2, 8);
+  return timestamp + randomChars;
+}
+
 function resetGameBoard() {
   // Remove the end game message box if it exists
     const messageBox = document.querySelector('.message-box');
@@ -144,10 +124,12 @@ function resetGameBoard() {
   updateScoreboard();
 }
 
+// Starting game
 let currentGame = 0;
 function startGame() {
   if (currentGame === 0) {
     shuffleDeck();
+    const userID = generateUserID();
   }
   currentGame++;
   dealCards();
@@ -306,6 +288,13 @@ function showEndGameMessage() {
   document.body.appendChild(messageBox);
 }
 
+// Write stats to database
+function writeStatsToDatabase(userID, gameNumber, totalScore) {
+  const db = firebase.database();
+
+  db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
+}
+
 // Enxecute ending game functions when called
 function endGame() {
   // Assign the card-selected class to all cards that were flipped
@@ -316,6 +305,8 @@ function endGame() {
 
   updateScoreTracker(currentGame, totalScore);   // Append scores to the scoretracker
   updateSuitTracker(currentGame, suitScores);   // Append scores to the suittracker
+
+  writeStatsToDatabase(userID, currentGame, totalScore)
   
   if (currentGame === 10) {
     showEndGameMessage(); // Call the showEndGameMessage function if it's the last game
