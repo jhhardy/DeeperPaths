@@ -1,13 +1,8 @@
 To better understand the strategies players use in your game and how effective they are, consider tracking the following game statistics:
 
 Total score: Track each player's total score throughout the game to evaluate their overall performance.
-
-Number of exploratory moves: Count how many times a player reveals a new card that they haven't seen before. This will help you quantify their exploration behavior.
-
-Number of exploitative moves: Count how many times a player selects a card they've seen before and know the value of. This will help you quantify their exploitation behavior.
-
+Number of exploratory moves: Count how many times a player reveals a new card that they haven't seen before in prior games. This will help you quantify their exploration behavior.
+Number of exploitative moves: Count how many times a player selects a card they've seen before in a prior game and know the value of. This will help you quantify their exploitation behavior.
 Exploration/exploitation ratio: Calculate the ratio of exploratory moves to exploitative moves for each player. This can help you determine their preference for exploration or exploitation.
-
-Proportion of board unexplored: Calculate the proportion of cards the player has not yet at any point during 
-
+Proportion of board unexplored at end of game: Calculate the proportion of cards the player has not yet at any point during 
 Turn-by-turn decision time: Record the time taken by each player to make a decision on each turn. This can help you analyze their decision-making process and understand whether they spend more time on exploration or exploitation.
