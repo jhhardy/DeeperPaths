@@ -14,6 +14,21 @@ firebase.initializeApp(firebaseConfig);
 
 console.log(firebase);
 
+// Create a new user
+firebase.auth().createUserWithEmailAndPassword("testuser@example.com", "password123")
+  .then((userCredential) => {
+    // Add data point to the database
+    const dbRef = firebase.database().ref("users/" + userCredential.user.uid);
+    dbRef.set({
+      name: "Test User",
+      email: "testuser@example.com",
+      age: 30
+    });
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+
 // Defining constants and giving the cards values
 const cards = [
   "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",
