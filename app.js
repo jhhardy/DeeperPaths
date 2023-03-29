@@ -14,6 +14,9 @@ firebase.initializeApp(firebaseConfig);
 
 console.log(firebase);
 
+
+
+//////////////////////////////*TEST*//////////////////////////////
 // Get a reference to the Firebase Realtime Database
 const database = firebase.database();
 
@@ -32,6 +35,7 @@ database.ref("users/" + userId).set(userData)
   .catch((error) => {
     console.error("Error adding new user to database: ", error);
   });
+  //////////////////////////////*TEST*//////////////////////////////
 
 
 // Defining constants and giving the cards values
