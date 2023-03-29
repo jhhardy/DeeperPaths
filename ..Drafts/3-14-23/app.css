@@ -1,0 +1,106 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
+
+/*Define card characteristics*/
+.card {
+  background-image: none;
+  background: rgb(189, 102, 2); /* change the background color */
+  background-size: cover; /* remove the dot */
+  border-radius: 10px;
+  border: 1px solid black;
+  box-shadow: 2px 2px 5px rgba(189, 111, 10, 0.3);
+  height: 90px;
+  width: 60px;
+  margin: 10px;
+  text-align: center;
+  font-size: 2rem;
+  line-height: 90px;
+  cursor: pointer;
+}
+
+/*Set image for card when face down*/
+.card-hidden {
+  background-image: url('./card-back.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.card-flipped {
+  background-color: white;
+}
+
+.heart {
+  color: red;
+}
+
+.diamond {
+  color: blue;
+}
+
+.spade {
+  color: black;
+}
+
+.club {
+  color: green;
+}
+
+.content-container {
+  display: flex;
+  flex-direction: row; /* Add flex-direction: row */
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  background-image: url('./background-felt.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: 20px;
+  height: 100vh; /* Set height to 100vh */
+}
+
+/*Define where the whole scoreboard box floats*/
+.scoreboard-container {
+  /* Remove the position, top, left, and transform properties */
+  margin-right: 20px; /* Add margin-right for spacing */
+}
+
+.game-board {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  grid-template-columns: repeat(11, 1fr);
+  gap: 30px;
+  margin-left: 0; /* Set margin-left to 0 */
+  margin-top: 10px;
+  max-width: 600px;
+}
+
+/*Define characteristics of the score box*/
+.scoreboard {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 10px;
+  background-color: #eee;
+  border: 2px solid #333;
+  border-radius: 5px;
+  text-align: center;
+  width: 175px;
+  margin: 10px auto;
+}
+
+/* Style for disabled start button */
+#start-btn.disabled {
+  background-color: gray;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+#reset-btn.disabled {
+  background-color: gray;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+
+

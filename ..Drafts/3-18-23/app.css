@@ -1,0 +1,226 @@
+/* Card styles */
+.card {
+  background-image: none;
+  background: rgb(189, 102, 2);
+  background-size: cover;
+  border-radius: 10px;
+  border: 3px solid rgb(189, 102, 2);
+  box-shadow: 2px 2px 5px rgba(189, 111, 10, 0.3);
+  height: 90px;
+  width: 60px;
+  margin: 10px;
+  text-align: center;
+  font-size: 2rem;
+  line-height: 90px;
+  cursor: pointer;
+}
+
+.card-valid {
+  background-image: url('./card-back-key.png');
+  background-size: cover;
+  background-position: center;
+  }
+  
+.card-invalid {
+  background-image: url('./card-back.png');
+  background-size: cover;
+  background-position: center;
+  }
+
+.card-flipped {
+    background-color: white;
+  }
+
+.heart {
+  color: red;
+}
+
+.diamond {
+  color: blue;
+}
+
+.spade {
+  color: rgb(73, 73, 73);
+}
+
+.club {
+  color: green;
+}
+
+/* Container styles */
+.content-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  background-image: url('./background.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: 20px;
+  height: 100vh;
+}
+
+.scoreboard-container {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+/* Game board styles */
+.game-board {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-columns: repeat(8, 1fr);
+  gap: 30px;
+  margin-left: 225px;
+  margin-top: 10px;
+}
+
+.game-board .row:first-child {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  align-items: center;
+}
+
+.game-board .row:first-child .card:first-child {
+  margin-top: 20px;
+}
+
+.game-board .row:first-child .card:last-child {
+  margin-bottom: 20px;
+}
+
+/* Scoreboard and score tracker styles */
+.scoreboard, .scoretracker {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 10px;
+  background-color: #eee;
+  border: 2px solid #333;
+  border-radius: 5px;
+  text-align: center;
+  width: 175px;
+  margin: 10px auto;
+  position: sticky;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.total-score {
+  font-style: italic;
+  font-weight: bold;
+}
+
+.scoreboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scoretracker-container {
+  margin-top: 60px;
+}
+
+.scoretracker {
+  text-align: left;
+}
+
+.score-above-threshold {
+  color: green;
+}
+
+.score-below-threshold {
+  color: red;
+}
+
+/* Disabled button styles */
+#start-btn.disabled {
+  background-color: gray;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Message box styles */
+.message-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border: 1px solid black;
+  padding: 20px;
+}
+
+.message-box .button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.message-box .button-container button {
+  background-color: rgb(189, 102, 2);
+  color: white;
+  font-size: 1.2rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.game-board .row:first-child .card:first-child {
+  margin-top: 20px;
+}
+
+.game-board .row:first-child .card:last-child {
+  margin-bottom: 20px;
+}
+
+.game-board .row:first-child {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  align-items: center;
+}
+
+/* Error message box styles */
+.error-box {
+  position: absolute;
+  z-index: 999;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgb(255, 255, 255);
+  padding: 5px;
+  border: 1px solid black;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.error-box.fade-in {
+  animation: fade-in 0.5s ease-in-out forwards;
+}
+
+.error-box.fade-out {
+  animation: fade-out 1s ease-in-out forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
