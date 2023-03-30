@@ -80,12 +80,14 @@ function dealCards() {
 }
 
 //*********************STARTING GAME*********************** */
+// Generate User ID
 function generateUserID() {
   const timestamp = Date.now().toString();
   const randomChars = Math.random().toString(36).substring(2, 8);
   return timestamp + randomChars;
 }
 
+// Reset GameBoard
 function resetGameBoard() {
   // Remove the end game message box if it exists
     const messageBox = document.querySelector('.message-box');
@@ -126,10 +128,11 @@ function resetGameBoard() {
 
 // Starting game
 let currentGame = 0;
+let userID;
 function startGame() {
   if (currentGame === 0) {
     shuffleDeck();
-    const userID = generateUserID();
+    userID = generateUserID();
   }
   currentGame++;
   dealCards();
@@ -289,7 +292,7 @@ function showEndGameMessage() {
 }
 
 // Write stats to database
-function writeStatsToDatabase(userID, gameNumber, totalScore) {
+function writeStatsToDatabase(gameNumber, totalScore) {
   const db = firebase.database();
 
   db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
@@ -306,7 +309,7 @@ function endGame() {
   updateScoreTracker(currentGame, totalScore);   // Append scores to the scoretracker
   updateSuitTracker(currentGame, suitScores);   // Append scores to the suittracker
 
-  writeStatsToDatabase(userID, currentGame, totalScore)
+  writeStatsToDatabase(currentGame, totalScore)
   
   if (currentGame === 10) {
     showEndGameMessage(); // Call the showEndGameMessage function if it's the last game
