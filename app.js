@@ -53,11 +53,11 @@ function assignCardSuit(cardElement, card) {
 function assignCardPoints(cardElement, card) {
   let points;
   if (card.startsWith("A")) {
-    points = 11;
-  } else if (card.startsWith("K") || card.startsWith("Q") || card.startsWith("J")) {
-    points = 10;
+    points = 2;
+  } else if (card.startsWith("K") || card.startsWith("Q") || card.startsWith("J") || card.startsWith("10")) {
+    points = 1;
   } else {
-    points = parseInt(card);
+    points = 0;
   }
   cardElement.dataset.points = points;
 }
@@ -95,7 +95,7 @@ function resetGameBoard() {
       messageBox.remove();
     }
 
-  // Reset both the total and suit scores to 0
+  // Reset both the stats and suit scores to 0
   totalScore = 0;
   suitScores = {
     "♥": 0,
@@ -103,6 +103,8 @@ function resetGameBoard() {
     "♦": 0,
     "♣": 0
   };
+  exploratoryMoves = 0;
+  exploitativeMoves = 0;
 
   // Reseting card states
   const cards = document.querySelectorAll('.card');
@@ -142,21 +144,53 @@ function startGame() {
 }
 
 //*********************GAME LOGIC AND RULES*********************** */
-// STEP 1: Flip card
-  function flipCard(cardElement) {
-    cardElement.classList.remove('card-valid'); // Removes the valid class on the card
-    cardElement.classList.add('card-flipped'); // Sets the card value to flip
-    cardElement.textContent = cardElement.dataset.value; // Displays the card's suit and value to the user
-  }
+  // STEP 1: Flip card
+    let exploratoryMoves = 0;
+    let exploitativeMoves = 0;
+    let flippedCards = [];
+
+    // Function for measuring exploratory vs. exploitative behavior
+    function countMoves(cardElement) {
+      const cardValue = cardElement.dataset.value;
+      const exploitedCards = document.querySelectorAll('.card-selected[data-value="' + cardValue + '"]');
+
+      if (exploitedCards.length === 0) {
+        exploratoryMoves++;
+      } else {
+        const flippedCardValues = flippedCards.map(card => card.dataset.value);
+        if (flippedCardValues.includes(cardValue)) {
+          exploitativeMoves++;
+          console.log("Exploitation")
+        }
+      }
+
+      flippedCards.push(cardElement);
+    }
+
+    // Function for flipping the card
+    function flipCard(cardElement) {
+      cardElement.classList.remove('card-valid');
+      cardElement.classList.add('card-flipped');
+      cardElement.textContent = cardElement.dataset.value;
+
+      countMoves(cardElement);
+    }
+
 
   // STEP 2: Update the scores
-  function updateScores(cardElement) {
-    const suit = cardElement.dataset.value.slice(-1);   // Get the suit and points data from the card element
-    const points = parseInt(cardElement.dataset.points);
+    function updateScores(cardElement) {
+      const suit = cardElement.dataset.value.slice(-1);   // Get the suit and points data from the card element
+      const points = parseInt(cardElement.dataset.points);
 
-    totalScore += points;   // Update the total score and suit scores objects
-    suitScores[suit] += points;
-  }
+      totalScore += points;   // Update the total score and suit scores objects
+      suitScores[suit] += points;
+
+      // Check if points were scored and play sound if so
+      if (points > 0) {
+        const audio = new Audio('ClinkingCoins.wav');
+        audio.play();
+      }
+    }
 
   // STEP 3: Update the scoreboard
     function updateScoreboard() {
@@ -193,48 +227,48 @@ function startGame() {
   }
 
   // STEP 4: Lock all other cards in the row
-  function lockOtherCardsInRow(cardElement) {
-    const row = cardElement.closest('.row'); // Get the row that contains the clicked card
-    const otherCardsInRow = row.querySelectorAll('.row[data-row="' + row.dataset.row + '"] .card:not(.card-flipped)'); // Get all other cards in the row
-  
-    otherCardsInRow.forEach(card => {
-      card.classList.remove('card-valid');
-      card.classList.add('card-locked');
-    });
-  }
+    function lockOtherCardsInRow(cardElement) {
+      const row = cardElement.closest('.row'); // Get the row that contains the clicked card
+      const otherCardsInRow = row.querySelectorAll('.row[data-row="' + row.dataset.row + '"] .card:not(.card-flipped)'); // Get all other cards in the row
+    
+      otherCardsInRow.forEach(card => {
+        card.classList.remove('card-valid');
+        card.classList.add('card-locked');
+      });
+    }
 
   // STEP 5: Validates cards in the next row
-  function unlockCardsInNextRow(cardElement) {
-    const row = cardElement.parentElement.dataset.row;
-    const nextRow = parseInt(row) + 1;
-    let cardIndex = Array.from(cardElement.parentElement.children).indexOf(cardElement);
-  
-    let cardIndicesToUnlock = [];
-  
-    if (row === "1") {    
-      // For row 1, unlock the next 3 cards
-      cardIndicesToUnlock.push(cardIndex * 2 + 1);
-      cardIndicesToUnlock.push(cardIndex * 2 + 2);
-      cardIndicesToUnlock.push(cardIndex * 2 + 3);
-    } else {       
-      // For other rows, unlock the two or three cards cards closest to the selected card
-      if (cardIndex > 0) {
-        cardIndicesToUnlock.push(cardIndex);
-        cardIndicesToUnlock.push(cardIndex + 1);
+    function unlockCardsInNextRow(cardElement) {
+      const row = cardElement.parentElement.dataset.row;
+      const nextRow = parseInt(row) + 1;
+      let cardIndex = Array.from(cardElement.parentElement.children).indexOf(cardElement);
+    
+      let cardIndicesToUnlock = [];
+    
+      if (row === "1") {    
+        // For row 1, unlock the next 3 cards
+        cardIndicesToUnlock.push(cardIndex * 2 + 1);
+        cardIndicesToUnlock.push(cardIndex * 2 + 2);
+        cardIndicesToUnlock.push(cardIndex * 2 + 3);
+      } else {       
+        // For other rows, unlock the two or three cards cards closest to the selected card
+        if (cardIndex > 0) {
+          cardIndicesToUnlock.push(cardIndex);
+          cardIndicesToUnlock.push(cardIndex + 1);
+        }
+    
+        if (cardIndex < cardElement.parentElement.children.length - 1) {
+          cardIndicesToUnlock.push(cardIndex + 1);
+          cardIndicesToUnlock.push(cardIndex + 2);
+        }
       }
-  
-      if (cardIndex < cardElement.parentElement.children.length - 1) {
-        cardIndicesToUnlock.push(cardIndex + 1);
-        cardIndicesToUnlock.push(cardIndex + 2);
-      }
+    
+      cardIndicesToUnlock.forEach(index => {
+        const nextRowCard = document.querySelector(`.row[data-row="${nextRow}"] .card:nth-child(${index})`);
+        nextRowCard.classList.remove('card-invalid');
+        nextRowCard.classList.add('card-valid');
+      });
     }
-  
-    cardIndicesToUnlock.forEach(index => {
-      const nextRowCard = document.querySelector(`.row[data-row="${nextRow}"] .card:nth-child(${index})`);
-      nextRowCard.classList.remove('card-invalid');
-      nextRowCard.classList.add('card-valid');
-    });
-  }
   
 //*********************ENDING GAME*********************** */
 // Output total score to the scoretracker
@@ -292,10 +326,12 @@ function showEndGameMessage() {
 }
 
 // Write stats to database
-function writeStatsToDatabase(gameNumber, totalScore) {
+function writeStatsToDatabase(gameNumber, totalScore, exploratoryMoves, exploitativeMoves) {
   const db = firebase.database();
 
   db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
+  db.ref(`users/${userID}/stats/Exploration_Game${gameNumber}`).set(exploratoryMoves); // Write the exploration behavior for the game to the database
+  db.ref(`users/${userID}/stats/Exploitation_Game${gameNumber}`).set(exploitativeMoves); // Write the exploitative behavior for the game to the database
 }
 
 // Enxecute ending game functions when called
@@ -309,7 +345,7 @@ function endGame() {
   updateScoreTracker(currentGame, totalScore);   // Append scores to the scoretracker
   updateSuitTracker(currentGame, suitScores);   // Append scores to the suittracker
 
-  writeStatsToDatabase(currentGame, totalScore)
+  writeStatsToDatabase(currentGame, totalScore, exploratoryMoves, exploitativeMoves) // Writing stats to database
   
   if (currentGame === 10) {
     showEndGameMessage(); // Call the showEndGameMessage function if it's the last game
