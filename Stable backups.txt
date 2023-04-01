@@ -1,3 +1,17 @@
+// Firebase initialization
+const firebaseConfig = {
+  apiKey: "AIzaSyDIcSlBjSKVY-SJmDh_RtRXuuB29LdpRyQ",
+  authDomain: "deeper-paths.firebaseapp.com",
+  databaseURL: "https://deeper-paths-default-rtdb.firebaseio.com",
+  projectId: "deeper-paths",
+  storageBucket: "deeper-paths.appspot.com",
+  messagingSenderId: "494030260010",
+  appId: "1:494030260010:web:29aaf47310af25555b0053",
+  measurementId: "G-LC45VYLJ4C"
+};
+
+firebase.initializeApp(firebaseConfig);
+
 // Defining constants and giving the cards values
 const cards = [
   "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",
@@ -5,6 +19,13 @@ const cards = [
   "A♦", "2♦", "3♦", "4♦", "5♦", "6♦", "7♦", "8♦", "9♦", "10♦", "J♦", "Q♦", "K♦",
   "A♣", "2♣", "3♣", "4♣", "5♣", "6♣", "7♣", "8♣", "9♣", "10♣", "J♣", "Q♣", "K♣"
 ];
+let totalScore = 0;
+let suitScores = {
+  "♥": 0,
+  "♠": 0,
+  "♦": 0,
+  "♣": 0
+  };
 
 //*********************PREPARING GAMEBOARD*********************** */
   // Shuffle the cards using the Fisher-Yates algorithm
@@ -59,6 +80,14 @@ function dealCards() {
 }
 
 //*********************STARTING GAME*********************** */
+// Generate User ID
+function generateUserID() {
+  const timestamp = Date.now().toString();
+  const randomChars = Math.random().toString(36).substring(2, 8);
+  return timestamp + randomChars;
+}
+
+// Reset GameBoard
 function resetGameBoard() {
   // Remove the end game message box if it exists
     const messageBox = document.querySelector('.message-box');
@@ -66,6 +95,7 @@ function resetGameBoard() {
       messageBox.remove();
     }
 
+  // Reset both the stats and suit scores to 0
   totalScore = 0;
   suitScores = {
     "♥": 0,
@@ -73,27 +103,38 @@ function resetGameBoard() {
     "♦": 0,
     "♣": 0
   };
+  exploratoryMoves = 0;
+  exploitativeMoves = 0;
 
+  // Reseting card states
   const cards = document.querySelectorAll('.card');
   cards.forEach(card => {
-    card.classList.remove('card-locked', 'card-valid', 'card-flipped');
-    card.classList.add('card-invalid');
-    card.textContent = '';
+    card.classList.remove('card-locked', 'card-valid', 'card-flipped'); // Removing all prior classes from the card
+    card.classList.add('card-invalid'); // Reseting the card stats to invalid
+    card.textContent = ''; // Clearing all card text content
+    if (card.classList.contains('card-selected')) { // Showing text content for all cards assigned card-selected classicfication ***CAN CHANGE THIS TO DETERMINE HOW LONG EACH CARD WILL SHOW THIS INFORMATION***
+      card.textContent = card.dataset.value; 
+    }
   });
 
+  // Validating the cards in row 1
   const row1Cards = document.querySelectorAll('.row[data-row="1"] .card');
   row1Cards.forEach(card => {
     card.classList.remove('card-invalid');
     card.classList.add('card-valid');
   });
 
+  // Updating scoreboard
   updateScoreboard();
 }
 
+// Starting game
 let currentGame = 0;
+let userID;
 function startGame() {
   if (currentGame === 0) {
     shuffleDeck();
+    userID = generateUserID();
   }
   currentGame++;
   dealCards();
@@ -104,11 +145,30 @@ function startGame() {
 
 //*********************GAME LOGIC AND RULES*********************** */
 // STEP 1: Flip card
-  function flipCard(cardElement) {
-    cardElement.classList.remove('card-valid'); // Removes the valid class on the card
-    cardElement.classList.add('card-flipped'); // Sets the card value to flip
-    cardElement.textContent = cardElement.dataset.value; // Displays the card's suit and value to the user
+let exploratoryMoves = 0;
+let exploitativeMoves = 0;
+let flippedCards = [];
+function flipCard(cardElement) {
+  cardElement.classList.remove('card-valid'); // Removes the valid class on the card
+  cardElement.classList.add('card-flipped'); // Sets the card value to flip
+  cardElement.textContent = cardElement.dataset.value; // Displays the card's suit and value to the user
+
+  // Counting exploratory moves
+  const cardValue = cardElement.dataset.value;
+  const exploitedCards = document.querySelectorAll('.card-selected[data-value="' + cardValue + '"]');
+
+  if (exploitedCards.length === 0) {
+    exploratoryMoves++;
+  } else {
+    // Counting exploitative moves
+    const flippedCardValues = flippedCards.map(card => card.dataset.value);
+    if (flippedCardValues.includes(cardValue)) {
+      exploitativeMoves++;
+    }
   }
+
+  flippedCards.push(cardElement);
+}
 
   // STEP 2: Update the scores
   function updateScores(cardElement) {
@@ -120,14 +180,7 @@ function startGame() {
   }
 
   // STEP 3: Update the scoreboard
-  let totalScore = 0;
-  let suitScores = {
-    "♥": 0,
-    "♠": 0,
-    "♦": 0,
-    "♣": 0
-    };
-  function updateScoreboard() {
+    function updateScoreboard() {
     // Update total score
     totalScore = Object.values(suitScores).reduce((acc, val) => acc + val, 0);
     document.getElementById("score-box").textContent = `Total score: ${totalScore}`;
@@ -259,10 +312,25 @@ function showEndGameMessage() {
   document.body.appendChild(messageBox);
 }
 
-// End the game
+// Write stats to database
+function writeStatsToDatabase(gameNumber, totalScore) {
+  const db = firebase.database();
+
+  db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
+}
+
+// Enxecute ending game functions when called
 function endGame() {
+  // Assign the card-selected class to all cards that were flipped
+  const flippedCards = document.querySelectorAll('.card-flipped');
+  flippedCards.forEach(card => {
+    card.classList.add('card-selected');
+  });
+
   updateScoreTracker(currentGame, totalScore);   // Append scores to the scoretracker
-  updateSuitTracker(currentGame, suitScores);   // Append scores to the scoretracker
+  updateSuitTracker(currentGame, suitScores);   // Append scores to the suittracker
+
+  writeStatsToDatabase(currentGame, totalScore)
   
   if (currentGame === 10) {
     showEndGameMessage(); // Call the showEndGameMessage function if it's the last game
@@ -308,3 +376,285 @@ cardElements.forEach((cardElement) => {
     }
   });
 });
+
+/* General styles */
+header {
+  background-color: black;
+  padding: 20px 20px; /* 20px padding on top and bottom */
+  margin-bottom: 5px;
+}
+
+header h1 {
+  color: orange;
+  font-family: 'Palatino Linotype', serif;
+  font-size: 48px;
+  text-align: left;
+  margin: 0;
+}
+
+.title {
+  color: rgb(189, 102, 2);
+  font-family: 'Georgia', serif;
+  font-size: 48px;
+  text-shadow: 2px 2px 5px rgba(189, 111, 10, 0.5);
+}
+
+body {
+  background-color: black;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Card styles */
+.card {
+  background-image: none;
+  background: rgb(189, 102, 2);
+  background-size: cover;
+  border-radius: 10px;
+  border: 3px solid rgb(189, 102, 2);
+  box-shadow: 2px 2px 5px rgba(189, 111, 10, 0.3);
+  height: 90px;
+  width: 60px;
+  margin: 10px;
+  text-align: center;
+  font-size: 2rem;
+  line-height: 90px;
+  cursor: pointer;
+  text-shadow: -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 1px 1px 0 #FFF;
+}
+
+.card-valid {
+  background-image: url('./card-back-key.png');
+  background-size: cover;
+  background-position: center;
+  }
+  
+.card-invalid {
+  background-image: url('./card-back.png');
+  background-size: cover;
+  background-position: center;
+  }
+
+.card-flipped {
+    background-color: white;
+  }
+
+.card-locked {
+    background-image: url('./card-back.png');
+    background-size: cover;
+    background-position: center;
+    }
+
+.card-selected {
+  border: 3px solid rgba(255, 215, 0);
+  }
+
+.heart {
+  color: red;
+}
+
+.diamond {
+  color: blue;
+}
+
+.spade {
+  color: rgb(73, 73, 73);
+}
+
+.club {
+  color: green;
+}
+
+/* Container styles */
+
+.content-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: black;
+  padding: 20px;
+  width: 1150px;
+  height: 780px;
+  margin: auto;
+  position: relative;
+  background-image: url('./background.jpg');
+}
+
+.scoreboard-container {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+/* Game board styles */
+.game-board {
+  display: grid;
+  grid-template-rows: repeat(1, 1fr);
+  grid-template-columns: repeat(8, 1fr);
+  gap: 30px;
+  margin-left: 225px;
+  margin-top: 10px;
+}
+
+.game-board .row:first-child {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  align-items: center;
+}
+
+.game-board .row:first-child .card:first-child {
+  margin-top: 20px;
+}
+
+.game-board .row:first-child .card:last-child {
+  margin-bottom: 20px;
+}
+
+/* Scoreboard and score tracker styles */
+.scoreboard, .scoretracker, .suittracker {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 5px;
+  background-color: #eee;
+  border: 2px solid #333;
+  border-radius: 5px;
+  text-align: center;
+  width: 175px;
+  margin: 20px auto;
+}
+
+.suittracker {
+  font-size: 18px;
+}
+
+.total-score {
+  font-weight: bold;
+}
+
+.scoreboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scoretracker {
+  text-align: left;
+}
+
+.score-above-threshold {
+  color: green;
+}
+
+.score-below-threshold {
+  color: red;
+}
+
+/* Disabled button styles */
+#start-btn.disabled {
+  background-color: gray;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Message box styles */
+.message-box {
+  font-size: 24px;
+  font-weight: bold;
+  position: fixed;
+  text-align: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border: 1px solid black;
+  padding: 20px 10px;
+}
+
+.message-box .button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.message-box .button-container button {
+  background-color: rgb(189, 102, 2);
+  color: white;
+  font-size: 1.2rem;
+  padding: 0.5rem .5rem;
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.game-board .row:first-child .card:first-child {
+  margin-top: 20px;
+}
+
+.game-board .row:first-child .card:last-child {
+  margin-bottom: 20px;
+}
+
+.game-board .row:first-child {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  align-items: center;
+}
+
+
+/* Error message box styles */
+.error-box {
+  position: absolute;
+  z-index: 999;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: transparent;
+  padding: 3px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 3rem;
+  font-weight: bold;
+  color: rgb(189, 102, 2);  
+  text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+}
+
+.error-box.fade-in {
+  animation: fade-in 0.5s ease-in-out forwards;
+}
+
+.error-box.fade-out {
+  animation: fade-out 1s ease-in-out forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.invisible {
+  opacity: 0;
+  visibility: hidden;
+}
