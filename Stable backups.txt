@@ -53,11 +53,11 @@ function assignCardSuit(cardElement, card) {
 function assignCardPoints(cardElement, card) {
   let points;
   if (card.startsWith("A")) {
-    points = 11;
-  } else if (card.startsWith("K") || card.startsWith("Q") || card.startsWith("J")) {
-    points = 10;
+    points = 2;
+  } else if (card.startsWith("K") || card.startsWith("Q") || card.startsWith("J") || card.startsWith("10")) {
+    points = 1;
   } else {
-    points = parseInt(card);
+    points = 0;
   }
   cardElement.dataset.points = points;
 }
@@ -131,53 +131,103 @@ function resetGameBoard() {
 // Starting game
 let currentGame = 0;
 let userID;
+let dateTime;
+
 function startGame() {
   if (currentGame === 0) {
     shuffleDeck();
     userID = generateUserID();
+    dateTime = new Date();
+
+    // Write the date and time the user first loaded the page to the database
+    const db = firebase.database();
+    db.ref(`users/${userID}/userData/DateTime`).set(dateTime.toString());
   }
+
   currentGame++;
   dealCards();
   gameStarted = true;
-
   resetGameBoard();
+  lastMoveTime = new Date().getTime(); //Resting move time on start of game
 }
+
 
 //*********************GAME LOGIC AND RULES*********************** */
 // STEP 1: Flip card
-let exploratoryMoves = 0;
-let exploitativeMoves = 0;
-let flippedCards = [];
-function flipCard(cardElement) {
-  cardElement.classList.remove('card-valid'); // Removes the valid class on the card
-  cardElement.classList.add('card-flipped'); // Sets the card value to flip
-  cardElement.textContent = cardElement.dataset.value; // Displays the card's suit and value to the user
+    let flippedCards = [];
 
-  // Counting exploratory moves
-  const cardValue = cardElement.dataset.value;
-  const exploitedCards = document.querySelectorAll('.card-selected[data-value="' + cardValue + '"]');
+    // Recording move time
+    let moves = [];
+    let lastMoveTime = new Date().getTime();
+ 
+      // Function for recording move time
+      function recordMoveTime(isExploratory) {
+        const now = new Date();
+        const moveTime = now.getTime() - lastMoveTime;
+        lastMoveTime = now.getTime();
+      
+        // Record move time, type, and move number in an array
+        moves.push({
+          moveNumber: moves.length + 1,
+          time: moveTime,
+          type: isExploratory ? 'exploratory' : 'exploitative'
+        });
+      }
 
-  if (exploitedCards.length === 0) {
-    exploratoryMoves++;
-  } else {
-    // Counting exploitative moves
-    const flippedCardValues = flippedCards.map(card => card.dataset.value);
-    if (flippedCardValues.includes(cardValue)) {
-      exploitativeMoves++;
-    }
-  }
+    // Function for measuring exploratory vs. exploitative behavior
+      let exploratoryMoves = 0;
+      let exploitativeMoves = 0;
+      let unexploredCards = (document.querySelectorAll('.card')).length;
+      let percentUnexplored = 100;
 
-  flippedCards.push(cardElement);
-}
+      function countMoves(cardElement) {
+        const cardValue = cardElement.dataset.value;
+        const exploitedCards = document.querySelectorAll('.card-selected[data-value="' + cardValue + '"]');
+        const allCards = document.querySelectorAll('.card');
+      
+        // If move is exploratory
+        if (exploitedCards.length === 0) {
+          exploratoryMoves++;
+          unexploredCards--;
+          percentUnexplored = (unexploredCards / allCards.length) * 100;
+          recordMoveTime(true);
+      
+        // If move is exploitative
+        } else {
+          const flippedCardValues = flippedCards.map(card => card.dataset.value);
+          if (flippedCardValues.includes(cardValue)) {
+            exploitativeMoves++;
+            recordMoveTime(false);
+          }
+        }
+      
+        flippedCards.push(cardElement);
+        console.log(moves);
+      }
+      
+      // Function for flipping the card
+      function flipCard(cardElement) {
+        cardElement.classList.remove('card-valid');
+        cardElement.classList.add('card-flipped');
+        cardElement.textContent = cardElement.dataset.value;
+      
+        countMoves(cardElement);
+      }
 
   // STEP 2: Update the scores
-  function updateScores(cardElement) {
-    const suit = cardElement.dataset.value.slice(-1);   // Get the suit and points data from the card element
-    const points = parseInt(cardElement.dataset.points);
+    function updateScores(cardElement) {
+      const suit = cardElement.dataset.value.slice(-1);   // Get the suit and points data from the card element
+      const points = parseInt(cardElement.dataset.points);
 
-    totalScore += points;   // Update the total score and suit scores objects
-    suitScores[suit] += points;
-  }
+      totalScore += points;   // Update the total score and suit scores objects
+      suitScores[suit] += points;
+
+      // Check if points were scored and play sound if so
+      if (points > 0) {
+        const audio = new Audio('ClinkingCoins.wav');
+        audio.play();
+      }
+    }
 
   // STEP 3: Update the scoreboard
     function updateScoreboard() {
@@ -214,53 +264,52 @@ function flipCard(cardElement) {
   }
 
   // STEP 4: Lock all other cards in the row
-  function lockOtherCardsInRow(cardElement) {
-    const row = cardElement.closest('.row'); // Get the row that contains the clicked card
-    const otherCardsInRow = row.querySelectorAll('.row[data-row="' + row.dataset.row + '"] .card:not(.card-flipped)'); // Get all other cards in the row
-  
-    otherCardsInRow.forEach(card => {
-      card.classList.remove('card-valid');
-      card.classList.add('card-locked');
-    });
-  }
+    function lockOtherCardsInRow(cardElement) {
+      const row = cardElement.closest('.row'); // Get the row that contains the clicked card
+      const otherCardsInRow = row.querySelectorAll('.row[data-row="' + row.dataset.row + '"] .card:not(.card-flipped)'); // Get all other cards in the row
+    
+      otherCardsInRow.forEach(card => {
+        card.classList.remove('card-valid');
+        card.classList.add('card-locked');
+      });
+    }
 
   // STEP 5: Validates cards in the next row
-  function unlockCardsInNextRow(cardElement) {
-    const row = cardElement.parentElement.dataset.row;
-    const nextRow = parseInt(row) + 1;
-    let cardIndex = Array.from(cardElement.parentElement.children).indexOf(cardElement);
-  
-    let cardIndicesToUnlock = [];
-  
-    if (row === "1") {    
-      // For row 1, unlock the next 3 cards
-      cardIndicesToUnlock.push(cardIndex * 2 + 1);
-      cardIndicesToUnlock.push(cardIndex * 2 + 2);
-      cardIndicesToUnlock.push(cardIndex * 2 + 3);
-    } else {       
-      // For other rows, unlock the two or three cards cards closest to the selected card
-      if (cardIndex > 0) {
-        cardIndicesToUnlock.push(cardIndex);
-        cardIndicesToUnlock.push(cardIndex + 1);
+    function unlockCardsInNextRow(cardElement) {
+      const row = cardElement.parentElement.dataset.row;
+      const nextRow = parseInt(row) + 1;
+      let cardIndex = Array.from(cardElement.parentElement.children).indexOf(cardElement);
+    
+      let cardIndicesToUnlock = [];
+    
+      if (row === "1") {    
+        // For row 1, unlock the next 3 cards
+        cardIndicesToUnlock.push(cardIndex * 2 + 1);
+        cardIndicesToUnlock.push(cardIndex * 2 + 2);
+        cardIndicesToUnlock.push(cardIndex * 2 + 3);
+      } else {       
+        // For other rows, unlock the two or three cards cards closest to the selected card
+        if (cardIndex > 0) {
+          cardIndicesToUnlock.push(cardIndex);
+          cardIndicesToUnlock.push(cardIndex + 1);
+        }
+    
+        if (cardIndex < cardElement.parentElement.children.length - 1) {
+          cardIndicesToUnlock.push(cardIndex + 1);
+          cardIndicesToUnlock.push(cardIndex + 2);
+        }
       }
-  
-      if (cardIndex < cardElement.parentElement.children.length - 1) {
-        cardIndicesToUnlock.push(cardIndex + 1);
-        cardIndicesToUnlock.push(cardIndex + 2);
-      }
+    
+      cardIndicesToUnlock.forEach(index => {
+        const nextRowCard = document.querySelector(`.row[data-row="${nextRow}"] .card:nth-child(${index})`);
+        nextRowCard.classList.remove('card-invalid');
+        nextRowCard.classList.add('card-valid');
+      });
     }
-  
-    cardIndicesToUnlock.forEach(index => {
-      const nextRowCard = document.querySelector(`.row[data-row="${nextRow}"] .card:nth-child(${index})`);
-      nextRowCard.classList.remove('card-invalid');
-      nextRowCard.classList.add('card-valid');
-    });
-  }
   
 //*********************ENDING GAME*********************** */
 // Output total score to the scoretracker
 function updateScoreTracker(gameNumber, totalScore) {
-  console.log(`Updating score for game ${gameNumber} to ${totalScore}`);
   const gameScoreDiv = document.getElementById(`gamescore-${gameNumber}`);
   let output = `Game ${gameNumber}: ${totalScore}`;
   gameScoreDiv.innerHTML = output;
@@ -268,7 +317,6 @@ function updateScoreTracker(gameNumber, totalScore) {
 
 // Output suit scores to the suittracker
 function updateSuitTracker(gameNumber, suitScores) {
-  console.log(`Updating suit scores for game ${gameNumber}`);
   const suitTrackerDiv = document.getElementById(`suitscore-${gameNumber}`);
   let output = '';
   for (const suit in suitScores) {
@@ -313,13 +361,18 @@ function showEndGameMessage() {
 }
 
 // Write stats to database
-function writeStatsToDatabase(gameNumber, totalScore) {
+function writeStatsToDatabase(gameNumber) {
   const db = firebase.database();
 
   db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
+  db.ref(`users/${userID}/stats/Exploration_Game${gameNumber}`).set(exploratoryMoves); // Write the exploration behavior for the game to the database
+  db.ref(`users/${userID}/stats/Exploitation_Game${gameNumber}`).set(exploitativeMoves); // Write the exploitative behavior for the game to the database
+  db.ref(`users/${userID}/stats/PercentUnexplored_Game${gameNumber}`).set(percentUnexplored); // Write the percent unexplored for the game to the database
+
+  db.ref(`users/${userID}/moves`).set(moves); // Add the move times for the game to the existing array in the databas
 }
 
-// Enxecute ending game functions when called
+// Execute ending game functions when called
 function endGame() {
   // Assign the card-selected class to all cards that were flipped
   const flippedCards = document.querySelectorAll('.card-flipped');
@@ -327,11 +380,13 @@ function endGame() {
     card.classList.add('card-selected');
   });
 
+  //Updating scoreboards and databases
   updateScoreTracker(currentGame, totalScore);   // Append scores to the scoretracker
   updateSuitTracker(currentGame, suitScores);   // Append scores to the suittracker
 
-  writeStatsToDatabase(currentGame, totalScore)
+  writeStatsToDatabase(currentGame) // Writing stats to database
   
+  //Starting up next game
   if (currentGame === 10) {
     showEndGameMessage(); // Call the showEndGameMessage function if it's the last game
   } else {
@@ -376,285 +431,3 @@ cardElements.forEach((cardElement) => {
     }
   });
 });
-
-/* General styles */
-header {
-  background-color: black;
-  padding: 20px 20px; /* 20px padding on top and bottom */
-  margin-bottom: 5px;
-}
-
-header h1 {
-  color: orange;
-  font-family: 'Palatino Linotype', serif;
-  font-size: 48px;
-  text-align: left;
-  margin: 0;
-}
-
-.title {
-  color: rgb(189, 102, 2);
-  font-family: 'Georgia', serif;
-  font-size: 48px;
-  text-shadow: 2px 2px 5px rgba(189, 111, 10, 0.5);
-}
-
-body {
-  background-color: black;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-/* Card styles */
-.card {
-  background-image: none;
-  background: rgb(189, 102, 2);
-  background-size: cover;
-  border-radius: 10px;
-  border: 3px solid rgb(189, 102, 2);
-  box-shadow: 2px 2px 5px rgba(189, 111, 10, 0.3);
-  height: 90px;
-  width: 60px;
-  margin: 10px;
-  text-align: center;
-  font-size: 2rem;
-  line-height: 90px;
-  cursor: pointer;
-  text-shadow: -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 1px 1px 0 #FFF;
-}
-
-.card-valid {
-  background-image: url('./card-back-key.png');
-  background-size: cover;
-  background-position: center;
-  }
-  
-.card-invalid {
-  background-image: url('./card-back.png');
-  background-size: cover;
-  background-position: center;
-  }
-
-.card-flipped {
-    background-color: white;
-  }
-
-.card-locked {
-    background-image: url('./card-back.png');
-    background-size: cover;
-    background-position: center;
-    }
-
-.card-selected {
-  border: 3px solid rgba(255, 215, 0);
-  }
-
-.heart {
-  color: red;
-}
-
-.diamond {
-  color: blue;
-}
-
-.spade {
-  color: rgb(73, 73, 73);
-}
-
-.club {
-  color: green;
-}
-
-/* Container styles */
-
-.content-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: center;
-  align-items: flex-start;
-  background-color: black;
-  padding: 20px;
-  width: 1150px;
-  height: 780px;
-  margin: auto;
-  position: relative;
-  background-image: url('./background.jpg');
-}
-
-.scoreboard-container {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-left: 20px;
-  margin-right: 20px;
-}
-
-/* Game board styles */
-.game-board {
-  display: grid;
-  grid-template-rows: repeat(1, 1fr);
-  grid-template-columns: repeat(8, 1fr);
-  gap: 30px;
-  margin-left: 225px;
-  margin-top: 10px;
-}
-
-.game-board .row:first-child {
-  display: grid;
-  grid-template-rows: repeat(3, 1fr);
-  align-items: center;
-}
-
-.game-board .row:first-child .card:first-child {
-  margin-top: 20px;
-}
-
-.game-board .row:first-child .card:last-child {
-  margin-bottom: 20px;
-}
-
-/* Scoreboard and score tracker styles */
-.scoreboard, .scoretracker, .suittracker {
-  font-size: 24px;
-  font-weight: bold;
-  padding: 5px;
-  background-color: #eee;
-  border: 2px solid #333;
-  border-radius: 5px;
-  text-align: center;
-  width: 175px;
-  margin: 20px auto;
-}
-
-.suittracker {
-  font-size: 18px;
-}
-
-.total-score {
-  font-weight: bold;
-}
-
-.scoreboard-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.scoretracker {
-  text-align: left;
-}
-
-.score-above-threshold {
-  color: green;
-}
-
-.score-below-threshold {
-  color: red;
-}
-
-/* Disabled button styles */
-#start-btn.disabled {
-  background-color: gray;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-/* Message box styles */
-.message-box {
-  font-size: 24px;
-  font-weight: bold;
-  position: fixed;
-  text-align: center;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: white;
-  border: 1px solid black;
-  padding: 20px 10px;
-}
-
-.message-box .button-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-
-.message-box .button-container button {
-  background-color: rgb(189, 102, 2);
-  color: white;
-  font-size: 1.2rem;
-  padding: 0.5rem .5rem;
-  border: none;
-  border-radius: 0.5rem;
-}
-
-.game-board .row:first-child .card:first-child {
-  margin-top: 20px;
-}
-
-.game-board .row:first-child .card:last-child {
-  margin-bottom: 20px;
-}
-
-.game-board .row:first-child {
-  display: grid;
-  grid-template-rows: repeat(3, 1fr);
-  align-items: center;
-}
-
-
-/* Error message box styles */
-.error-box {
-  position: absolute;
-  z-index: 999;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: transparent;
-  padding: 3px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  text-align: center;
-  font-size: 3rem;
-  font-weight: bold;
-  color: rgb(189, 102, 2);  
-  text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
-}
-
-.error-box.fade-in {
-  animation: fade-in 0.5s ease-in-out forwards;
-}
-
-.error-box.fade-out {
-  animation: fade-out 1s ease-in-out forwards;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-.invisible {
-  opacity: 0;
-  visibility: hidden;
-}

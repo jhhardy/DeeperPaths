@@ -2,6 +2,7 @@ TODO:
 Add logic defining what a "win" vs. "loss" looks like
 Add conditional formatting to total score to tell user if they passed or failed
 Display welcome message explaining rules upon page loading
+Track metadata
 
 OPTIONAL:
 Add bar showing how close the user is to "passing"

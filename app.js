@@ -131,51 +131,88 @@ function resetGameBoard() {
 // Starting game
 let currentGame = 0;
 let userID;
+let dateTime;
+
 function startGame() {
   if (currentGame === 0) {
     shuffleDeck();
     userID = generateUserID();
+    dateTime = new Date();
+
+    // Write the date and time the user first loaded the page to the database
+    const db = firebase.database();
+    db.ref(`users/${userID}/userData/DateTime`).set(dateTime.toString());
   }
+
   currentGame++;
   dealCards();
   gameStarted = true;
-
   resetGameBoard();
+  lastMoveTime = new Date().getTime(); //Resting move time on start of game
 }
 
+
 //*********************GAME LOGIC AND RULES*********************** */
-  // STEP 1: Flip card
-    let exploratoryMoves = 0;
-    let exploitativeMoves = 0;
+// STEP 1: Flip card
     let flippedCards = [];
 
-    // Function for measuring exploratory vs. exploitative behavior
-    function countMoves(cardElement) {
-      const cardValue = cardElement.dataset.value;
-      const exploitedCards = document.querySelectorAll('.card-selected[data-value="' + cardValue + '"]');
-
-      if (exploitedCards.length === 0) {
-        exploratoryMoves++;
-      } else {
-        const flippedCardValues = flippedCards.map(card => card.dataset.value);
-        if (flippedCardValues.includes(cardValue)) {
-          exploitativeMoves++;
-          console.log("Exploitation")
-        }
+    // Recording move time
+    let moves = [];
+    let lastMoveTime = new Date().getTime();
+ 
+      // Function for recording move time
+      function recordMoveTime(isExploratory) {
+        const now = new Date();
+        const moveTime = now.getTime() - lastMoveTime;
+        lastMoveTime = now.getTime();
+      
+        // Record move time, type, and move number in an array
+        moves.push({
+          moveNumber: moves.length + 1,
+          time: moveTime,
+          type: isExploratory ? 'exploratory' : 'exploitative'
+        });
       }
 
-      flippedCards.push(cardElement);
-    }
+    // Function for measuring exploratory vs. exploitative behavior
+      let exploratoryMoves = 0;
+      let exploitativeMoves = 0;
+      let unexploredCards = (document.querySelectorAll('.card')).length;
+      let percentUnexplored = 100;
 
-    // Function for flipping the card
-    function flipCard(cardElement) {
-      cardElement.classList.remove('card-valid');
-      cardElement.classList.add('card-flipped');
-      cardElement.textContent = cardElement.dataset.value;
-
-      countMoves(cardElement);
-    }
-
+      function countMoves(cardElement) {
+        const cardValue = cardElement.dataset.value;
+        const exploitedCards = document.querySelectorAll('.card-selected[data-value="' + cardValue + '"]');
+        const allCards = document.querySelectorAll('.card');
+      
+        // If move is exploratory
+        if (exploitedCards.length === 0) {
+          exploratoryMoves++;
+          unexploredCards--;
+          percentUnexplored = (unexploredCards / allCards.length) * 100;
+          recordMoveTime(true);
+      
+        // If move is exploitative
+        } else {
+          const flippedCardValues = flippedCards.map(card => card.dataset.value);
+          if (flippedCardValues.includes(cardValue)) {
+            exploitativeMoves++;
+            recordMoveTime(false);
+          }
+        }
+      
+        flippedCards.push(cardElement);
+        console.log(moves);
+      }
+      
+      // Function for flipping the card
+      function flipCard(cardElement) {
+        cardElement.classList.remove('card-valid');
+        cardElement.classList.add('card-flipped');
+        cardElement.textContent = cardElement.dataset.value;
+      
+        countMoves(cardElement);
+      }
 
   // STEP 2: Update the scores
     function updateScores(cardElement) {
@@ -273,7 +310,6 @@ function startGame() {
 //*********************ENDING GAME*********************** */
 // Output total score to the scoretracker
 function updateScoreTracker(gameNumber, totalScore) {
-  console.log(`Updating score for game ${gameNumber} to ${totalScore}`);
   const gameScoreDiv = document.getElementById(`gamescore-${gameNumber}`);
   let output = `Game ${gameNumber}: ${totalScore}`;
   gameScoreDiv.innerHTML = output;
@@ -281,7 +317,6 @@ function updateScoreTracker(gameNumber, totalScore) {
 
 // Output suit scores to the suittracker
 function updateSuitTracker(gameNumber, suitScores) {
-  console.log(`Updating suit scores for game ${gameNumber}`);
   const suitTrackerDiv = document.getElementById(`suitscore-${gameNumber}`);
   let output = '';
   for (const suit in suitScores) {
@@ -326,15 +361,18 @@ function showEndGameMessage() {
 }
 
 // Write stats to database
-function writeStatsToDatabase(gameNumber, totalScore, exploratoryMoves, exploitativeMoves) {
+function writeStatsToDatabase(gameNumber) {
   const db = firebase.database();
 
   db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
   db.ref(`users/${userID}/stats/Exploration_Game${gameNumber}`).set(exploratoryMoves); // Write the exploration behavior for the game to the database
   db.ref(`users/${userID}/stats/Exploitation_Game${gameNumber}`).set(exploitativeMoves); // Write the exploitative behavior for the game to the database
+  db.ref(`users/${userID}/stats/PercentUnexplored_Game${gameNumber}`).set(percentUnexplored); // Write the percent unexplored for the game to the database
+
+  db.ref(`users/${userID}/moves`).set(moves); // Add the move times for the game to the existing array in the databas
 }
 
-// Enxecute ending game functions when called
+// Execute ending game functions when called
 function endGame() {
   // Assign the card-selected class to all cards that were flipped
   const flippedCards = document.querySelectorAll('.card-flipped');
@@ -342,11 +380,13 @@ function endGame() {
     card.classList.add('card-selected');
   });
 
+  //Updating scoreboards and databases
   updateScoreTracker(currentGame, totalScore);   // Append scores to the scoretracker
   updateSuitTracker(currentGame, suitScores);   // Append scores to the suittracker
 
-  writeStatsToDatabase(currentGame, totalScore, exploratoryMoves, exploitativeMoves) // Writing stats to database
+  writeStatsToDatabase(currentGame) // Writing stats to database
   
+  //Starting up next game
   if (currentGame === 10) {
     showEndGameMessage(); // Call the showEndGameMessage function if it's the last game
   } else {
