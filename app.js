@@ -202,7 +202,6 @@ function startGame() {
         }
       
         flippedCards.push(cardElement);
-        console.log(moves);
       }
       
       // Function for flipping the card
@@ -309,9 +308,17 @@ function startGame() {
   
 //*********************ENDING GAME*********************** */
 // Output total score to the scoretracker
+let averageTotalScores = 0;
+let TotalScoreAcrossGames = 0;
+
 function updateScoreTracker(gameNumber, totalScore) {
+  // Calculate running average of total score
+  TotalScoreAcrossGames += totalScore;
+  averageTotalScores = (TotalScoreAcrossGames / gameNumber);
+
+  // Output total and average total scores on score tracker
   const gameScoreDiv = document.getElementById(`gamescore-${gameNumber}`);
-  let output = `Game ${gameNumber}: ${totalScore}`;
+  let output = `Game ${gameNumber}: ${totalScore} (${averageTotalScores.toFixed(1)})`;
   gameScoreDiv.innerHTML = output;
 }
 
@@ -365,6 +372,7 @@ function writeStatsToDatabase(gameNumber) {
   const db = firebase.database();
 
   db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
+  db.ref(`users/${userID}/stats/AvgTotalScore_Game${gameNumber}`).set(averageTotalScores); // Write the average totalscore for the game to the database
   db.ref(`users/${userID}/stats/Exploration_Game${gameNumber}`).set(exploratoryMoves); // Write the exploration behavior for the game to the database
   db.ref(`users/${userID}/stats/Exploitation_Game${gameNumber}`).set(exploitativeMoves); // Write the exploitative behavior for the game to the database
   db.ref(`users/${userID}/stats/PercentUnexplored_Game${gameNumber}`).set(percentUnexplored); // Write the percent unexplored for the game to the database

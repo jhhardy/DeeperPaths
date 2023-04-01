@@ -202,7 +202,6 @@ function startGame() {
         }
       
         flippedCards.push(cardElement);
-        console.log(moves);
       }
       
       // Function for flipping the card
@@ -309,9 +308,17 @@ function startGame() {
   
 //*********************ENDING GAME*********************** */
 // Output total score to the scoretracker
+let averageTotalScores = 0;
+let TotalScoreAcrossGames = 0;
+
 function updateScoreTracker(gameNumber, totalScore) {
+  // Calculate running average of total score
+  TotalScoreAcrossGames += totalScore;
+  averageTotalScores = (TotalScoreAcrossGames / gameNumber);
+
+  // Output total and average total scores on score tracker
   const gameScoreDiv = document.getElementById(`gamescore-${gameNumber}`);
-  let output = `Game ${gameNumber}: ${totalScore}`;
+  let output = `Game ${gameNumber}: ${totalScore} (${averageTotalScores.toFixed(2)})`;
   gameScoreDiv.innerHTML = output;
 }
 
