@@ -11,6 +11,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 // Defining constants and giving the cards values
 const cards = [
@@ -28,11 +29,59 @@ let suitScores = {
   };
 
 //********************LOADING WELCOME SCREEN*********************** */
-  // Listen for start button
-  function welcomeScreen() {
-    const startButton = document.getElementById("start-button");
-    startButton.addEventListener("click", startGame);
-  }
+// Listen for start button on welcome screen
+function welcomeScreen() {
+  const continueButton = document.getElementById("continue-button");
+  continueButton.addEventListener("click", showContestScreen);
+}
+
+// Show contest screen
+function showContestScreen() {
+  const welcomeScreen = document.getElementById("welcome-screen");
+  const contestScreen = document.getElementById("contest-screen");
+  
+  welcomeScreen.style.display = "none";
+  contestScreen.style.display = "block";
+  
+  listenForStartButton(); // Call the new function to listen for the start button click
+  listenForSubmitEmailButton(); // Call the new function to listen for the submit email button click
+}
+
+// Listen for submit email button on contest screen
+let userEmailAddress;
+function listenForSubmitEmailButton() {
+  const submitEmailButton = document.getElementById("submit-email-button");
+  const emailForm = document.querySelector("form");
+  const emailInput = document.getElementById("email");
+
+  submitEmailButton.addEventListener("click", function(event) {
+    event.preventDefault(); // Prevent the form from submitting and refreshing the page
+    const userEmail = emailInput.value;
+
+    // Check if the user's email address is in a valid email format
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(userEmail)) {
+      // If the email address is not in a valid format, warn the user and don't store the email address
+      alert("Please enter a valid email address in order to enter the contest. If you would like to opt out, click: Start Game (No Contest) instead.");
+      return;
+    }
+
+    // Store the user's email in a global variable
+    userEmailAddress = userEmail;
+
+    // Start the game by calling the startGame function
+    startGame();
+  });
+  emailForm.addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent the form from submitting and refreshing the page
+  });
+}
+
+// Listen for start button on contest screen
+function listenForStartButton() {
+  const startButton = document.getElementById("start-button");
+  startButton.addEventListener("click", startGame);
+}
 
 //*********************PREPARING GAMEBOARD*********************** */
   // Shuffle the cards using the Fisher-Yates algorithm
@@ -136,21 +185,24 @@ function resetGameBoard() {
 }
 
 // Starting game
-let currentGame = 0;
 let userID;
-let dateTime;
+function writeUserData() {
+  const userEmailAddress = document.getElementById("email").value || "No Contest";
+  const currentDate = new Date();
+  const date = currentDate.toDateString();
+  const time = currentDate.toTimeString();
 
+  db.ref(`users/${userID}/userData/Date`).set(date);
+  db.ref(`users/${userID}/userData/Time`).set(time);
+  db.ref(`users/${userID}/userData/Email`).set(userEmailAddress);
+}
+
+let currentGame = 0;
 function startGame() {
   if (currentGame === 0) {
     shuffleDeck();
     userID = generateUserID();
-    dateTime = new Date();
-
-    // Write the date and time the user first loaded the page to the database
-    const db = firebase.database();
-    db.ref(`users/${userID}/userData/DateTime`).set(dateTime.toString());
-
-    // Hide the welcome screen
+    writeUserData();
     const overlay = document.getElementById("overlay");
     overlay.style.display = "none";
   }
@@ -162,7 +214,6 @@ function startGame() {
   lastMoveTime = new Date().getTime(); //Resting move time on start of game
 }
 
-
 //*********************GAME LOGIC AND RULES*********************** */
 // STEP 1: Flip card
     let flippedCards = [];
@@ -172,7 +223,7 @@ function startGame() {
     let lastMoveTime = new Date().getTime();
  
       // Function for recording move time
-      function recordMoveTime(isExploratory) {
+      function recordMoveData(isExploratory) {
         const now = new Date();
         const moveTime = now.getTime() - lastMoveTime;
         lastMoveTime = now.getTime();
@@ -183,7 +234,7 @@ function startGame() {
           time: moveTime,
           type: isExploratory ? 'exploratory' : 'exploitative'
         });
-      }
+      } 
 
     // Function for measuring exploratory vs. exploitative behavior
       let exploratoryMoves = 0;
@@ -201,14 +252,14 @@ function startGame() {
           exploratoryMoves++;
           unexploredCards--;
           percentUnexplored = (unexploredCards / allCards.length) * 100;
-          recordMoveTime(true);
+          recordMoveData(true);
       
         // If move is exploitative
         } else {
           const flippedCardValues = flippedCards.map(card => card.dataset.value);
           if (flippedCardValues.includes(cardValue)) {
             exploitativeMoves++;
-            recordMoveTime(false);
+            recordMoveData(false);
           }
         }
       
@@ -228,12 +279,15 @@ function startGame() {
     function updateScores(cardElement) {
       const suit = cardElement.dataset.value.slice(-1);   // Get the suit and points data from the card element
       const points = parseInt(cardElement.dataset.points);
-
+    
       totalScore += points;   // Update the total score and suit scores objects
       suitScores[suit] += points;
-
+    
       // Check if points were scored and play sound if so
-      if (points > 0) {
+      if (points === 1) {
+        const audio = new Audio('ClinkingCoin.wav');
+        audio.play();
+      } else if (points === 2) {
         const audio = new Audio('ClinkingCoins.wav');
         audio.play();
       }
@@ -418,8 +472,6 @@ function showEndGameMessage() {
 
 // Write stats to database
 function writeStatsToDatabase(gameNumber) {
-  const db = firebase.database();
-
   db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
   db.ref(`users/${userID}/stats/AvgTotalScore_Game${gameNumber}`).set(averageTotalScores); // Write the average totalscore for the game to the database
   db.ref(`users/${userID}/stats/Exploration_Game${gameNumber}`).set(exploratoryMoves); // Write the exploration behavior for the game to the database
@@ -478,7 +530,7 @@ cardElements.forEach((cardElement) => {
       }
     
     } else {
-      const message = "Card is not valid";
+      const message = "Card is not valid! Look for the golden keys! 🔑";
       const errorBox = document.querySelector(".error-box");
       errorBox.innerHTML = message;
       errorBox.style.opacity = 1;

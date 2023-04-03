@@ -44,8 +44,8 @@ body {
   z-index: 1;
 }
 
-/* Welcome screen style */
-#welcome-screen {
+/* Welcome and contest screen styles */
+#welcome-screen, #contest-screen {
   width: 70%; /* Set the desired width here (e.g., 70% of the parent container) */
   max-width: 850px; /* Set a maximum width to prevent the box from becoming too large on wide screens */
   background-color: #2c2c2c; /* Set the background color to dark grey */
@@ -57,32 +57,72 @@ body {
   font-family: 'Palatino Linotype', serif;
 }
 
-#welcome-screen h2 {
+#welcome-screen h2, #contest-screen h2 {
   margin-top: 0;
   font-size: 30px;
 }
 
-#welcome-screen p {
+#welcome-screen p, #contest-screen p {
   margin: 10px 0;
   text-align: left; /* Add this line to make the body text left justified */
   font-size: 20px;
 }
 
-#welcome-screen ul,
-#welcome-screen ol {
+#welcome-screen ul, #welcome-screen ol, #contest-screen ul, #contest-screen ol {
   text-align: left;
   font-size: 20px;
 }
 
-#welcome-screen button {
-  background-color: rgb(189, 102, 2);
+/* Button styles with gradients */
+#welcome-screen button,
+#contest-screen button,
+#submit-email-button {
+  background: linear-gradient(to bottom, #FF6D00, #B54B00);
   color: white;
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
   font-family: 'Palatino Linotype', serif;
-  font-size: 30px;
+  font-size: 20px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Hover styles for buttons with gradients */
+#welcome-screen button:hover,
+#contest-screen button:hover,
+#submit-email-button:hover{
+  background: linear-gradient(to bottom, #B54B00, #FF6D00);
+}
+
+#welcome-screen button:hover, #contest-screen button:hover, #submit-email-button:hover {
+  background-color: rgb(150, 80, 0);
+}
+
+#contest-screen form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#contest-screen form input[type="email"] {
+  background-color: white;
+  color: rgb(5, 5, 5);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'Palatino Linotype', serif;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+#contest-screen p:last-child {
+  text-align: center;
+}
+
+#contest-screen {
+  display: none; /* Add this line to hide the contest screen initially */
 }
 
 /* Card styles */
