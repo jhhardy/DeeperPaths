@@ -27,6 +27,13 @@ let suitScores = {
   "♣": 0
   };
 
+//********************LOADING WELCOME SCREEN*********************** */
+  // Listen for start button
+  function welcomeScreen() {
+    const startButton = document.getElementById("start-button");
+    startButton.addEventListener("click", startGame);
+  }
+
 //*********************PREPARING GAMEBOARD*********************** */
   // Shuffle the cards using the Fisher-Yates algorithm
   function shuffleDeck() {
@@ -142,6 +149,10 @@ function startGame() {
     // Write the date and time the user first loaded the page to the database
     const db = firebase.database();
     db.ref(`users/${userID}/userData/DateTime`).set(dateTime.toString());
+
+    // Hide the welcome screen
+    const overlay = document.getElementById("overlay");
+    overlay.style.display = "none";
   }
 
   currentGame++;
@@ -311,6 +322,36 @@ function startGame() {
 let averageTotalScores = 0;
 let TotalScoreAcrossGames = 0;
 
+// Helper function calculating color gradient for final score
+function getColor(score) {
+  let r, g, b;
+
+  if (score <= 4) {
+    // Dark red
+    r = 200;
+    g = 0;
+    b = 0;
+  } else if (score > 4 && score <= 5) {
+    // Yellow
+    r = 255;
+    g = 255;
+    b = 0;
+  } else if (score > 5 && score <= 9) {
+    // Dark green
+    r = 0;
+    g = 200;
+    b = 0;
+  } else {
+    // Dark purple
+    r = 128;
+    g = 0;
+    b = 128;
+  }
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+// Update ScoreTracker with final game score
 function updateScoreTracker(gameNumber, totalScore) {
   // Calculate running average of total score
   TotalScoreAcrossGames += totalScore;
@@ -318,8 +359,14 @@ function updateScoreTracker(gameNumber, totalScore) {
 
   // Output total and average total scores on score tracker
   const gameScoreDiv = document.getElementById(`gamescore-${gameNumber}`);
-  let output = `Game ${gameNumber}: ${totalScore} (${averageTotalScores.toFixed(1)})`;
+  let output = `Round ${gameNumber}: <span class="total-score">${totalScore}</span> (<span class="average-score">${averageTotalScores.toFixed(1)}</span>)`;
   gameScoreDiv.innerHTML = output;
+
+  // Set the color based on the scores
+  const totalScoreColor = getColor(totalScore);
+  const averageScoreColor = getColor(averageTotalScores);
+  gameScoreDiv.querySelector('.total-score').style.color = totalScoreColor;
+  gameScoreDiv.querySelector('.average-score').style.color = averageScoreColor;
 }
 
 // Output suit scores to the suittracker
@@ -348,9 +395,9 @@ function showEndRoundMessage(score) {
   messageBox.classList.add('message-box');
   messageBox.innerHTML = `
     <h2>Round Over!</h2>
-    <p>Your total score was: ${score}</p>
+    <p>Your score for the round was: ${score}</p>
     <div class="button-container">
-      <button onclick="startGame()">Play Again</button>
+      <button onclick="startGame()">We go again!</button>
     </div>
   `;
   document.body.appendChild(messageBox);
@@ -363,9 +410,11 @@ function showEndGameMessage() {
   messageBox.innerHTML = `
     <h2>Game Over!</h2>
     <p>Thank you for playing!</p>
+    <p>Final score: ${TotalScoreAcrossGames}</p>
   `;
   document.body.appendChild(messageBox);
 }
+
 
 // Write stats to database
 function writeStatsToDatabase(gameNumber) {
@@ -403,9 +452,9 @@ function endGame() {
 }
 
 //*********************EVENT LISTENERS*********************** */
-// Start the game right away
+// Loading game
 window.addEventListener('load', function() {
-  startGame();
+  welcomeScreen()
 });
 
 // Add click event listener to each card element

@@ -10,6 +10,38 @@
 		<h1>Deeper Paths</h1>
     </header>
 	<main>
+		<div id="overlay">
+			<div id="welcome-screen">
+				<h2>🏔️🔦 Welcome, daring explorer! 🔦🏔️</h2>
+				<p>
+					You have been hired by the renowned treasure-hunting company, GemSeekers Inc., to embark on an exhilarating adventure through a recently discovered cave complex in search of treasure!	Each time you enter the cave, you will be responsible for choosing the path you take, revealing cards along the way which accumulate points and unlock the path forward.
+				</p>
+				<p>
+					What you are looking for in the cave are special cards that hold rare gems 💎:
+				</p>
+				<ul>
+				  <li>Aces (A) are the rarest gems 💎 and most valuable, worth 2 points.</li>
+				  <li>Kings (K), Queens (Q), Jacks (J), and 10s are more common gems 💎 worth 1 point.</li>
+				  <li>All other cards do not contain gems and are worth 0 points.</li>
+				</ul>
+				<p>Here's how your thrilling adventure will unfold:</p>
+				<ol>
+				  <li>When you enter the cave, the first row of cards on the left is unlocked for exploration, as indicated by a golden key 🔑 on the back of the card.</li>
+				  <li>After flipping a card, the remaining cards in the same row become locked 🔒, while the cave's magic will unlock 🔓 the next row of cards based on your current position.</li>
+				  <li>If you find a gem, its point value will be added to your total score.</li>
+				  <li>The deeper you venture into the cave, the more gems you will accumulate. Keep an eye on your total score as you progress to determine how well your adventure is going.</li>
+				  <li>When you reach the end of the cave, you will ship your treasure off to GemSeekers Inc. At that time, the cave's magic will tally your final round score, updating the scoreboards for your accomplishments to date.</li>
+				</ol>
+				<p>
+				  You will be given 10 chances to explore the cave. Your goal will be to maximize the overall number of gems you take home. Your performance as an explorer will be evaluated using the total number of gems you bring back with you at the end of the game.
+				</p>
+				<p>
+				  Are you ready to put your treasure-hunting skills to the test and uncover the hidden gems within the cave? Strap on your gear, grab your trusty flashlight, and prepare for the adventure of a lifetime!
+				</p>
+				<p>Good luck, intrepid explorer! The fortune and glory of GemSeekers Inc. await! 🌟🏆</p>
+				<button id="start-button">Start Game</button>
+			</div>
+		</div>
 		<div id="error-box" class="error-box"></div>
 		<div id="message-box"></div>
 		<div class="content-container">
@@ -23,30 +55,30 @@
 				</div>
 				<div class="scoretracker-container">
 				<div class="scoretracker">
-					<div id="gamescore-1"> Game 1:</div>
-					<div id="gamescore-2">Game 2:</div>
-					<div id="gamescore-3">Game 3:</div>
-					<div id="gamescore-4">Game 4:</div>
-					<div id="gamescore-5"> Game 5:</div>
-					<div id="gamescore-6">Game 6:</div>
-					<div id="gamescore-7">Game 7:</div>
-					<div id="gamescore-8">Game 8:</div>
-					<div id="gamescore-9"> Game 9:</div>
-					<div id="gamescore-10">Game 10:</div>
+					<div id="gamescore-1">Round 1:</div>
+					<div id="gamescore-2">Round 2:</div>
+					<div id="gamescore-3">Round 3:</div>
+					<div id="gamescore-4">Round 4:</div>
+					<div id="gamescore-5"> Round 5:</div>
+					<div id="gamescore-6">Round 6:</div>
+					<div id="gamescore-7">Round 7:</div>
+					<div id="gamescore-8">Round 8:</div>
+					<div id="gamescore-9"> Round 9:</div>
+					<div id="gamescore-10">Round 10:</div>
 				</div>
 				</div>
 				<div class="suittracker-container">
 					<div class="suittracker">
-					<div id="suitscore-1">Suits Game 1</div>
-					<div id="suitscore-2">Suits Game 2</div>
-					<div id="suitscore-3">Suits Game 3</div>
-					<div id="suitscore-4">Suits Game 4</div>
-					<div id="suitscore-5">Suits Game 5</div>
-					<div id="suitscore-6">Suits Game 6</div>
-					<div id="suitscore-7">Suits Game 7</div>
-					<div id="suitscore-8">Suits Game 8</div>
-					<div id="suitscore-9">Suits Game 9</div>
-					<div id="suitscore-10">Suits Game 10</div>
+					<div id="suitscore-1">Suits Round 1</div>
+					<div id="suitscore-2">Suits Round 2</div>
+					<div id="suitscore-3">Suits Round 3</div>
+					<div id="suitscore-4">Suits Round 4</div>
+					<div id="suitscore-5">Suits Round 5</div>
+					<div id="suitscore-6">Suits Round 6</div>
+					<div id="suitscore-7">Suits Round 7</div>
+					<div id="suitscore-8">Suits Round 8</div>
+					<div id="suitscore-9">Suits Round 9</div>
+					<div id="suitscore-10">Suits Round 10</div>
 					</div>
 				</div>
 			</div>	  
@@ -120,9 +152,6 @@
 			  <div class="card"></div>
 			</div>
 		</div>
-		<audio id="ding-sound">
-			<source src="ClinkingCoins.wav" type="audio/wav">
-		  </audio>
 	  </main>
 	<footer>
 		<p>&copy; 2023 Jay Hardy</p>
