@@ -143,6 +143,10 @@ body {
   text-shadow: -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 1px 1px 0 #FFF;
 }
 
+.card * {
+  user-select: none;
+}
+
 .card-valid {
   background-image: url('./card-back-key.png');
   background-size: cover;
@@ -347,15 +351,19 @@ body {
   font-weight: bold;
   color: rgb(189, 102, 2);  
   text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+  display: none; /* Set display to none by default */
 }
 
 .error-box.fade-in {
-  animation: fade-in 0.5s ease-in-out forwards;
+  animation: fade-in .2s ease-in-out forwards;
+  display: block; /* Set display to block when fading in */
 }
 
 .error-box.fade-out {
   animation: fade-out 1s ease-in-out forwards;
+  display: none; /* Set display to none when fading out */
 }
+
 
 @keyframes fade-in {
   from {
@@ -379,7 +387,6 @@ body {
   opacity: 0;
   visibility: hidden;
 }
-
 
 /* Mobile only code */
 @media only screen and (max-width: 768px) {

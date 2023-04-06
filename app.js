@@ -13,21 +13,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Defining constants and giving the cards values
-const cards = [
-  "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",
-  "A♠", "2♠", "3♠", "4♠", "5♠", "6♠", "7♠", "8♠", "9♠", "10♠", "J♠", "Q♠", "K♠",
-  "A♦", "2♦", "3♦", "4♦", "5♦", "6♦", "7♦", "8♦", "9♦", "10♦", "J♦", "Q♦", "K♦",
-  "A♣", "2♣", "3♣", "4♣", "5♣", "6♣", "7♣", "8♣", "9♣", "10♣", "J♣", "Q♣", "K♣"
-];
-let totalScore = 0;
-let suitScores = {
-  "♥": 0,
-  "♠": 0,
-  "♦": 0,
-  "♣": 0
-  };
-
 //********************LOADING WELCOME SCREEN*********************** */
 // Listen for start button on welcome screen
 function welcomeScreen() {
@@ -84,56 +69,101 @@ function listenForStartButton() {
 }
 
 //*********************PREPARING GAMEBOARD*********************** */
-  // Shuffle the cards using the Fisher-Yates algorithm
-  function shuffleDeck() {
-    for (let i = cards.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [cards[i], cards[j]] = [cards[j], cards[i]];
+  // Defining constants and giving the cards values
+  const cards = [
+    "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",
+    "A♠", "2♠", "3♠", "4♠", "5♠", "6♠", "7♠", "8♠", "9♠", "10♠", "J♠", "Q♠", "K♠",
+    "A♦", "2♦", "3♦", "4♦", "5♦", "6♦", "7♦", "8♦", "9♦", "10♦", "J♦", "Q♦", "K♦",
+    "A♣", "2♣", "3♣", "4♣", "5♣", "6♣", "7♣", "8♣", "9♣", "10♣", "J♣", "Q♣", "K♣"
+  ];
+
+  let suitScores = {
+    "♥": 0,
+    "♠": 0,
+    "♦": 0,
+    "♣": 0
+    };
+
+    // Shuffle the cards using the Fisher-Yates algorithm
+    function shuffleDeck() {
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+      }
+
+  //Converts Unicode symbol into words
+  function assignCardSuit(cardElement, card) {
+    if (card.includes("♥")) {
+      cardElement.classList.add("heart");
+    } else if (card.includes("♠")) {
+      cardElement.classList.add("spade");
+    } else if (card.includes("♦")) {
+      cardElement.classList.add("diamond");
+    } else if (card.includes("♣")) {
+      cardElement.classList.add("club");
     }
+  }
+
+  //Develops scoring mechanism
+    const standardScoringRules = {
+      "A": 2,
+      "K": 1,
+      "Q": 1,
+      "J": 1,
+      "1": 1, /*this is the value for the 10's place*/
+      "9": 0,
+      "8": 0,
+      "7": 0,
+      "6": 0,
+      "5": 0,
+      "4": 0,
+      "3": 0,
+      "2": 0
+    };
+
+    const modifiedScoringRules = {
+      "A": 4,
+      "K": 3,
+      "Q": 3,
+      "J": 3,
+      "1": 3, /* this is the value for the 10's place */
+      "9": 1,
+      "8": 1,
+      "7": 1,
+      "6": 1,
+      "5": 1,
+      "4": 1,
+      "3": 1,
+      "2": 1
+    };
+    
+
+    // Assign each card a value and point value based on scoring system
+    const cardElements = document.querySelectorAll('.card');
+    function assignCardPoints(cardElement, card, scoringSystem, suitsScoring) {
+      let points = 0;
+      if (suitsScoring === "allSuits" || suitsScoring === card.charAt(1)) {
+        points = scoringSystem[card.charAt(0)] || 0;
+      }
+      cardElement.dataset.points = points;
     }
 
-//Converts Unicode symbol into words
-function assignCardSuit(cardElement, card) {
-  if (card.includes("♥")) {
-    cardElement.classList.add("heart");
-  } else if (card.includes("♠")) {
-    cardElement.classList.add("spade");
-  } else if (card.includes("♦")) {
-    cardElement.classList.add("diamond");
-  } else if (card.includes("♣")) {
-    cardElement.classList.add("club");
+    // Function to assign the appropriate scoring system
+    function assignCardValue(cardElement, card, scoringSystem, suitsScoring) {
+      cardElement.dataset.value = card;
+      cardElement.classList.add("card-invalid");
+      assignCardPoints(cardElement, card, scoringSystem, suitsScoring);
+      assignCardSuit(cardElement, card);
+    }
+
+  //Deals out cards and assigns them values according the scoring system and suit options
+  function dealCards(valueScoring, suitsScoring) {
+    cards.forEach((card, index) => {
+      const cardElement = cardElements[index];
+      assignCardValue(cardElement, card, valueScoring, suitsScoring);
+    });
   }
-}
-
-//Develops scoring mechanism
-function assignCardPoints(cardElement, card) {
-  let points;
-  if (card.startsWith("A")) {
-    points = 2;
-  } else if (card.startsWith("K") || card.startsWith("Q") || card.startsWith("J") || card.startsWith("10")) {
-    points = 1;
-  } else {
-    points = 0;
-  }
-  cardElement.dataset.points = points;
-}
-
-// Assign each card a value and point value based on scoring system
-const cardElements = document.querySelectorAll('.card');
-function assignCardValue(cardElement, card) {
-  cardElement.dataset.value = card;
-  cardElement.classList.add("card-invalid");
-  assignCardPoints(cardElement, card);
-  assignCardSuit(cardElement, card);
-}
-
-//Deals out cards and assigns them values
-function dealCards() {
-  cards.forEach((card, index) => {
-    const cardElement = cardElements[index];
-    assignCardValue(cardElement, card);
-  });
-}
 
 //*********************STARTING GAME*********************** */
 // Generate User ID
@@ -144,6 +174,7 @@ function generateUserID() {
 }
 
 // Reset GameBoard
+let totalScore = 0;
 function resetGameBoard() {
   // Remove the end game message box if it exists
     const messageBox = document.querySelector('.message-box');
@@ -184,7 +215,7 @@ function resetGameBoard() {
   updateScoreboard();
 }
 
-// Starting game
+// Writing user data to the database on the first game
 let userID;
 function writeUserData() {
   const userEmailAddress = document.getElementById("email").value || "No Contest";
@@ -197,6 +228,7 @@ function writeUserData() {
   db.ref(`users/${userID}/userData/Email`).set(userEmailAddress);
 }
 
+// Starting game
 let currentGame = 0;
 function startGame() {
   if (currentGame === 0) {
@@ -208,7 +240,7 @@ function startGame() {
   }
 
   currentGame++;
-  dealCards();
+  dealCards(modifiedScoringRules, "♦");
   gameStarted = true;
   resetGameBoard();
   lastMoveTime = new Date().getTime(); //Resting move time on start of game
@@ -287,7 +319,7 @@ function startGame() {
       if (points === 1) {
         const audio = new Audio('ClinkingCoin.wav');
         audio.play();
-      } else if (points === 2) {
+      } else if (points > 1) {
         const audio = new Audio('ClinkingCoins.wav');
         audio.play();
       }
@@ -533,9 +565,13 @@ cardElements.forEach((cardElement) => {
       const message = "Card is not valid! Look for the golden keys! 🔑";
       const errorBox = document.querySelector(".error-box");
       errorBox.innerHTML = message;
-      errorBox.style.opacity = 1;
+      errorBox.classList.add("fade-in"); // Add the fade-in class to trigger the animation
       setTimeout(() => {
-        errorBox.style.opacity = 0;
+        errorBox.classList.remove("fade-in"); // Remove the fade-in class to trigger the fade-out animation
+        errorBox.classList.add("fade-out"); // Add the fade-out class to trigger the animation
+        setTimeout(() => {
+          errorBox.classList.remove("fade-out"); // Remove the fade-out class to hide the error box completely
+        }, 1000);
       }, 2000);
     }
   });

@@ -1,6 +1,9 @@
 TODO:
 Add points to move data
 Add mute button
+Add rule change feature
+Add rule bar
+Fix weird click in middle bug (Caused by error bar)
 
 OPTIONAL:
 Add bar showing how close the user is to "passing"
