@@ -11,80 +11,161 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-
-// Defining constants and giving the cards values
-const cards = [
-  "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",
-  "A♠", "2♠", "3♠", "4♠", "5♠", "6♠", "7♠", "8♠", "9♠", "10♠", "J♠", "Q♠", "K♠",
-  "A♦", "2♦", "3♦", "4♦", "5♦", "6♦", "7♦", "8♦", "9♦", "10♦", "J♦", "Q♦", "K♦",
-  "A♣", "2♣", "3♣", "4♣", "5♣", "6♣", "7♣", "8♣", "9♣", "10♣", "J♣", "Q♣", "K♣"
-];
-let totalScore = 0;
-let suitScores = {
-  "♥": 0,
-  "♠": 0,
-  "♦": 0,
-  "♣": 0
-  };
+const db = firebase.database();
 
 //********************LOADING WELCOME SCREEN*********************** */
-  // Listen for start button
-  function welcomeScreen() {
-    const startButton = document.getElementById("start-button");
-    startButton.addEventListener("click", startGame);
-  }
+// Listen for start button on welcome screen
+function welcomeScreen() {
+  const continueButton = document.getElementById("continue-button");
+  continueButton.addEventListener("click", showContestScreen);
+}
 
-//*********************PREPARING GAMEBOARD*********************** */
-  // Shuffle the cards using the Fisher-Yates algorithm
-  function shuffleDeck() {
-    for (let i = cards.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [cards[i], cards[j]] = [cards[j], cards[i]];
+// Show contest screen
+function showContestScreen() {
+  const welcomeScreen = document.getElementById("welcome-screen");
+  const contestScreen = document.getElementById("contest-screen");
+  
+  welcomeScreen.style.display = "none";
+  contestScreen.style.display = "block";
+  
+  listenForStartButton(); // Call the new function to listen for the start button click
+  listenForSubmitEmailButton(); // Call the new function to listen for the submit email button click
+}
+
+// Listen for submit email button on contest screen
+let userEmailAddress;
+function listenForSubmitEmailButton() {
+  const submitEmailButton = document.getElementById("submit-email-button");
+  const emailForm = document.querySelector("form");
+  const emailInput = document.getElementById("email");
+
+  submitEmailButton.addEventListener("click", function(event) {
+    event.preventDefault(); // Prevent the form from submitting and refreshing the page
+    const userEmail = emailInput.value;
+
+    // Check if the user's email address is in a valid email format
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(userEmail)) {
+      // If the email address is not in a valid format, warn the user and don't store the email address
+      alert("Please enter a valid email address in order to enter the contest. If you would like to opt out, click: Start Game (No Contest) instead.");
+      return;
     }
-    }
 
-//Converts Unicode symbol into words
-function assignCardSuit(cardElement, card) {
-  if (card.includes("♥")) {
-    cardElement.classList.add("heart");
-  } else if (card.includes("♠")) {
-    cardElement.classList.add("spade");
-  } else if (card.includes("♦")) {
-    cardElement.classList.add("diamond");
-  } else if (card.includes("♣")) {
-    cardElement.classList.add("club");
-  }
-}
+    // Store the user's email in a global variable
+    userEmailAddress = userEmail;
 
-//Develops scoring mechanism
-function assignCardPoints(cardElement, card) {
-  let points;
-  if (card.startsWith("A")) {
-    points = 2;
-  } else if (card.startsWith("K") || card.startsWith("Q") || card.startsWith("J") || card.startsWith("10")) {
-    points = 1;
-  } else {
-    points = 0;
-  }
-  cardElement.dataset.points = points;
-}
-
-// Assign each card a value and point value based on scoring system
-const cardElements = document.querySelectorAll('.card');
-function assignCardValue(cardElement, card) {
-  cardElement.dataset.value = card;
-  cardElement.classList.add("card-invalid");
-  assignCardPoints(cardElement, card);
-  assignCardSuit(cardElement, card);
-}
-
-//Deals out cards and assigns them values
-function dealCards() {
-  cards.forEach((card, index) => {
-    const cardElement = cardElements[index];
-    assignCardValue(cardElement, card);
+    // Start the game by calling the startGame function
+    startGame();
+  });
+  emailForm.addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent the form from submitting and refreshing the page
   });
 }
+
+// Listen for start button on contest screen
+function listenForStartButton() {
+  const startButton = document.getElementById("start-button");
+  startButton.addEventListener("click", startGame);
+}
+
+//*********************PREPARING GAMEBOARD*********************** */
+  // Defining constants and giving the cards values
+  const cards = [
+    "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",
+    "A♠", "2♠", "3♠", "4♠", "5♠", "6♠", "7♠", "8♠", "9♠", "10♠", "J♠", "Q♠", "K♠",
+    "A♦", "2♦", "3♦", "4♦", "5♦", "6♦", "7♦", "8♦", "9♦", "10♦", "J♦", "Q♦", "K♦",
+    "A♣", "2♣", "3♣", "4♣", "5♣", "6♣", "7♣", "8♣", "9♣", "10♣", "J♣", "Q♣", "K♣"
+  ];
+
+  let suitScores = {
+    "♥": 0,
+    "♠": 0,
+    "♦": 0,
+    "♣": 0
+    };
+
+    // Shuffle the cards using the Fisher-Yates algorithm
+    function shuffleDeck() {
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+      }
+
+  //Converts Unicode symbol into words
+  function assignCardSuit(cardElement, card) {
+    if (card.includes("♥")) {
+      cardElement.classList.add("heart");
+    } else if (card.includes("♠")) {
+      cardElement.classList.add("spade");
+    } else if (card.includes("♦")) {
+      cardElement.classList.add("diamond");
+    } else if (card.includes("♣")) {
+      cardElement.classList.add("club");
+    }
+  }
+
+  //Develops scoring mechanism
+    const standardScoringRules = {
+      "A": 2,
+      "K": 1,
+      "Q": 1,
+      "J": 1,
+      "10": 1, /*this is the value for the 10's place*/
+      "9": 0,
+      "8": 0,
+      "7": 0,
+      "6": 0,
+      "5": 0,
+      "4": 0,
+      "3": 0,
+      "2": 0
+    };
+
+    const modifiedScoringRules = {
+      "A": 2,
+      "K": 2,
+      "Q": 2,
+      "J": 2,
+      "10": 2, /* this is the value for the 10's place */
+      "9": 2,
+      "8": 2,
+      "7": 2,
+      "6": 2,
+      "5": 2,
+      "4": 2,
+      "3": 2,
+      "2": 2
+    };
+    
+
+    // Assign each card a value and point value based on scoring system
+    const cardElements = document.querySelectorAll('.card');
+    function assignCardPoints(cardElement, card, scoringSystem, suitsScoring) {
+      let points = 0;
+      const cardRank = card.charAt(0) === "1" && card.charAt(1) === "0" ? "10" : card.charAt(0);
+      const cardSuit = cardRank === "10" ? card.charAt(2) : card.charAt(1);
+      if (suitsScoring === "allSuits" || suitsScoring === cardSuit) {
+        points = scoringSystem[cardRank] || 0;
+      }
+      cardElement.dataset.points = points;
+    }
+
+    // Function to assign the appropriate scoring system
+    function assignCardValue(cardElement, card, scoringSystem, suitsScoring) {
+      cardElement.dataset.value = card;
+      cardElement.classList.add("card-invalid");
+      assignCardPoints(cardElement, card, scoringSystem, suitsScoring);
+      assignCardSuit(cardElement, card);
+    }
+
+  //Deals out cards and assigns them values according the scoring system and suit options
+  function dealCards(valueScoring, suitsScoring) {
+    cards.forEach((card, index) => {
+      const cardElement = cardElements[index];
+      assignCardValue(cardElement, card, valueScoring, suitsScoring);
+    });
+  }
 
 //*********************STARTING GAME*********************** */
 // Generate User ID
@@ -95,6 +176,7 @@ function generateUserID() {
 }
 
 // Reset GameBoard
+let totalScore = 0;
 function resetGameBoard() {
   // Remove the end game message box if it exists
     const messageBox = document.querySelector('.message-box');
@@ -135,33 +217,40 @@ function resetGameBoard() {
   updateScoreboard();
 }
 
+// Writing user data to the database on the first game
+let userID;
+function writeUserData() {
+  const userEmailAddress = document.getElementById("email").value || "No Contest";
+  const currentDate = new Date();
+  const date = currentDate.toDateString();
+  const time = currentDate.toTimeString();
+
+  db.ref(`users/${userID}/userData/Date`).set(date);
+  db.ref(`users/${userID}/userData/Time`).set(time);
+  db.ref(`users/${userID}/userData/Email`).set(userEmailAddress);
+}
+
 // Starting game
 let currentGame = 0;
-let userID;
-let dateTime;
-
+let activeSuits;
+let activeScoring;
 function startGame() {
   if (currentGame === 0) {
     shuffleDeck();
     userID = generateUserID();
-    dateTime = new Date();
-
-    // Write the date and time the user first loaded the page to the database
-    const db = firebase.database();
-    db.ref(`users/${userID}/userData/DateTime`).set(dateTime.toString());
-
-    // Hide the welcome screen
+    writeUserData();
     const overlay = document.getElementById("overlay");
     overlay.style.display = "none";
+    activeSuits = "allSuits";
+    activeScoring = standardScoringRules;
   }
 
   currentGame++;
-  dealCards();
+  dealCards(activeScoring, activeSuits);
   gameStarted = true;
   resetGameBoard();
   lastMoveTime = new Date().getTime(); //Resting move time on start of game
 }
-
 
 //*********************GAME LOGIC AND RULES*********************** */
 // STEP 1: Flip card
@@ -172,7 +261,7 @@ function startGame() {
     let lastMoveTime = new Date().getTime();
  
       // Function for recording move time
-      function recordMoveTime(isExploratory) {
+      function recordMoveData(isExploratory) {
         const now = new Date();
         const moveTime = now.getTime() - lastMoveTime;
         lastMoveTime = now.getTime();
@@ -183,7 +272,7 @@ function startGame() {
           time: moveTime,
           type: isExploratory ? 'exploratory' : 'exploitative'
         });
-      }
+      } 
 
     // Function for measuring exploratory vs. exploitative behavior
       let exploratoryMoves = 0;
@@ -201,14 +290,14 @@ function startGame() {
           exploratoryMoves++;
           unexploredCards--;
           percentUnexplored = (unexploredCards / allCards.length) * 100;
-          recordMoveTime(true);
+          recordMoveData(true);
       
         // If move is exploitative
         } else {
           const flippedCardValues = flippedCards.map(card => card.dataset.value);
           if (flippedCardValues.includes(cardValue)) {
             exploitativeMoves++;
-            recordMoveTime(false);
+            recordMoveData(false);
           }
         }
       
@@ -228,12 +317,15 @@ function startGame() {
     function updateScores(cardElement) {
       const suit = cardElement.dataset.value.slice(-1);   // Get the suit and points data from the card element
       const points = parseInt(cardElement.dataset.points);
-
+    
       totalScore += points;   // Update the total score and suit scores objects
       suitScores[suit] += points;
-
+    
       // Check if points were scored and play sound if so
-      if (points > 0) {
+      if (points === 1) {
+        const audio = new Audio('ClinkingCoin.wav');
+        audio.play();
+      } else if (points > 1) {
         const audio = new Audio('ClinkingCoins.wav');
         audio.play();
       }
@@ -322,6 +414,36 @@ function startGame() {
 let averageTotalScores = 0;
 let TotalScoreAcrossGames = 0;
 
+// Helper function calculating color gradient for final score
+function getColor(score) {
+  let r, g, b;
+
+  if (score <= 4) {
+    // Dark red
+    r = 200;
+    g = 0;
+    b = 0;
+  } else if (score > 4 && score <= 5) {
+    // Yellow
+    r = 255;
+    g = 255;
+    b = 0;
+  } else if (score > 5 && score <= 9) {
+    // Dark green
+    r = 0;
+    g = 200;
+    b = 0;
+  } else {
+    // Dark purple
+    r = 128;
+    g = 0;
+    b = 128;
+  }
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+// Update ScoreTracker with final game score
 function updateScoreTracker(gameNumber, totalScore) {
   // Calculate running average of total score
   TotalScoreAcrossGames += totalScore;
@@ -329,8 +451,14 @@ function updateScoreTracker(gameNumber, totalScore) {
 
   // Output total and average total scores on score tracker
   const gameScoreDiv = document.getElementById(`gamescore-${gameNumber}`);
-  let output = `Game ${gameNumber}: ${totalScore} (${averageTotalScores.toFixed(1)})`;
+  let output = `Round ${gameNumber}: <span class="total-score">${totalScore}</span> (<span class="average-score">${averageTotalScores.toFixed(1)}</span>)`;
   gameScoreDiv.innerHTML = output;
+
+  // Set the color based on the scores
+  const totalScoreColor = getColor(totalScore);
+  const averageScoreColor = getColor(averageTotalScores);
+  gameScoreDiv.querySelector('.total-score').style.color = totalScoreColor;
+  gameScoreDiv.querySelector('.average-score').style.color = averageScoreColor;
 }
 
 // Output suit scores to the suittracker
@@ -354,14 +482,48 @@ function updateSuitTracker(gameNumber, suitScores) {
 }
 
 // Show end round message
-function showEndRoundMessage(score) {
+function showEndRoundMessage(score, isRuleChange) {
+  const messageBox = document.createElement('div');
+  messageBox.classList.add('message-box');
+  if (isRuleChange) {
+    messageBox.innerHTML = `
+      <h2>Round Over!</h2>
+      <p>Your score for the round was: ${score}</p>
+      <div class="button-container">
+      <button onclick="showRuleChangeMessage()">BIG NEWS!</button>
+      </div>
+    `;
+  } else {
+    messageBox.innerHTML = `
+      <h2>Round Over!</h2>
+      <p>Your score for the round was: ${score}</p>
+      <div class="button-container">
+        <button onclick="startGame()">We go again!</button>
+      </div>
+    `;
+  }
+  document.body.appendChild(messageBox);
+}
+
+// Show the rule change message
+function showRuleChangeMessage() {
+  // Remove the existing message box (if any)
+  const existingMessageBox = document.querySelector('.message-box');
+  if (existingMessageBox) {
+    existingMessageBox.remove();
+  }
+  
+  // Create and append the new message box
   const messageBox = document.createElement('div');
   messageBox.classList.add('message-box');
   messageBox.innerHTML = `
-    <h2>Round Over!</h2>
-    <p>Your total score was: ${score}</p>
+    <h2>Big news explorers!</h2>
+    <p>The market has changed!</p>
+    <p>Gemseekers INC only wants ${activeSuits} cards now. However, each ${activeSuits} card is now worth 2 points!</p>
+    <p>ALL other cards are now worth 0 points!</p>
+    <p>Happy hunting.</p>
     <div class="button-container">
-      <button onclick="startGame()">Play Again</button>
+      <button onclick="startGame()">Let's go!</button>
     </div>
   `;
   document.body.appendChild(messageBox);
@@ -374,14 +536,13 @@ function showEndGameMessage() {
   messageBox.innerHTML = `
     <h2>Game Over!</h2>
     <p>Thank you for playing!</p>
+    <p>Final score: ${TotalScoreAcrossGames}</p>
   `;
   document.body.appendChild(messageBox);
 }
 
 // Write stats to database
 function writeStatsToDatabase(gameNumber) {
-  const db = firebase.database();
-
   db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
   db.ref(`users/${userID}/stats/AvgTotalScore_Game${gameNumber}`).set(averageTotalScores); // Write the average totalscore for the game to the database
   db.ref(`users/${userID}/stats/Exploration_Game${gameNumber}`).set(exploratoryMoves); // Write the exploration behavior for the game to the database
@@ -389,6 +550,19 @@ function writeStatsToDatabase(gameNumber) {
   db.ref(`users/${userID}/stats/PercentUnexplored_Game${gameNumber}`).set(percentUnexplored); // Write the percent unexplored for the game to the database
 
   db.ref(`users/${userID}/moves`).set(moves); // Add the move times for the game to the existing array in the databas
+}
+
+// Displays the correct message to transition to next game
+function transitionMessages(totalScore) {
+  if (currentGame === 5) {
+    activeScoring = modifiedScoringRules;
+    activeSuits = ["♠", "♥", "♦", "♣"][Math.floor(Math.random() * 4)]; //Randomly sets on of the suits to be the active suit.
+    showEndRoundMessage(totalScore, true);
+  } else if (currentGame === 10) {
+    showEndGameMessage();
+  } else {
+    showEndRoundMessage(totalScore, false);
+  }
 }
 
 // Execute ending game functions when called
@@ -403,14 +577,11 @@ function endGame() {
   updateScoreTracker(currentGame, totalScore);   // Append scores to the scoretracker
   updateSuitTracker(currentGame, suitScores);   // Append scores to the suittracker
 
-  writeStatsToDatabase(currentGame) // Writing stats to database
-  
-  //Starting up next game
-  if (currentGame === 10) {
-    showEndGameMessage(); // Call the showEndGameMessage function if it's the last game
-  } else {
-    showEndRoundMessage(totalScore); // Call the showEndRoundMessage function if it's not the last game
-  }
+  // Write stats to database
+  writeStatsToDatabase(currentGame);
+
+  //Display end of game messages;
+  transitionMessages(totalScore);
 }
 
 //*********************EVENT LISTENERS*********************** */
@@ -440,12 +611,16 @@ cardElements.forEach((cardElement) => {
       }
     
     } else {
-      const message = "Card is not valid";
+      const message = "Card is not valid! Look for the golden keys! 🔑";
       const errorBox = document.querySelector(".error-box");
       errorBox.innerHTML = message;
-      errorBox.style.opacity = 1;
+      errorBox.classList.add("fade-in"); // Add the fade-in class to trigger the animation
       setTimeout(() => {
-        errorBox.style.opacity = 0;
+        errorBox.classList.remove("fade-in"); // Remove the fade-in class to trigger the fade-out animation
+        errorBox.classList.add("fade-out"); // Add the fade-out class to trigger the animation
+        setTimeout(() => {
+          errorBox.classList.remove("fade-out"); // Remove the fade-out class to hide the error box completely
+        }, 1000);
       }, 2000);
     }
   });

@@ -12,28 +12,28 @@
 	<main>
 		<div id="overlay">
 			<div id="welcome-screen">
-				<h2>🏔️🔦 Welcome, daring explorer! 🔦🏔️</h2>
+				<h2><span style="color: rgb(255, 255, 255); font-weight: bold;">Welcome, daring explorer!</span> </h2>
 				<p>
-					You have been hired by the renowned treasure-hunting company, GemSeekers Inc., to embark on an exhilarating adventure through a recently discovered cave complex in search of treasure!	Each time you enter the cave, you will be responsible for choosing the path you take, revealing cards along the way which accumulate points and unlock the path forward.
+					You have been hired by the renowned treasure-hunting company, <span style="color: rgb(34, 172, 214); font-weight: bold;">GemSeekers Inc.</span>, to embark on an exhilarating adventure through a recently discovered cave complex in search of treasure!	Each time you enter the cave, you will be responsible for choosing the path you take, revealing cards along the way which accumulate points and unlock the path forward.
 				</p>
 				<p>
-					What you are looking for in the cave are special cards that hold rare gems 💎:
+					What you are looking for in the cave are special cards that hold rare <span style="color: rgb(34, 172, 214); font-weight: bold;">gems</span> 💎:
 				</p>
 				<ul>
-				  <li>Aces (A) are the rarest gems 💎 and most valuable, worth 2 points.</li>
-				  <li>Kings (K), Queens (Q), Jacks (J), and 10s are more common gems 💎 worth 1 point.</li>
-				  <li>All other cards do not contain gems and are worth 0 points.</li>
-				</ul>
+					<li><span style="color: rgb(156, 102, 241); font-weight: bold;">Aces (A)</span> are the rarest <span style="color: rgb(34, 172, 214); font-weight: bold;">gems</span> 💎 and most valuable, worth <span style="color: rgb(156, 102, 241); font-weight: bold;">2 points</span>.</li>
+					<li><span style="color: rgb(66, 190, 41); font-weight: bold;">Kings (K), Queens (Q), Jacks (J), and 10s</span> are more common <span style="color: rgb(34, 172, 214); font-weight: bold;">gems</span> 💎 worth <span style="color: rgb(66, 190, 41); font-weight: bold;">1 point</span>.</li>
+					<li><span style="color: rgb(228, 51, 51); font-weight: bold;">All other cards</span> do not contain <span style="color: rgb(34, 172, 214); font-weight: bold;">gems</span> and are worth <span style="color: rgb(228, 51, 51); font-weight: bold;">0 points</span>.</li>
+				  </ul>
 				<p>Here's how each trip into the cave will unfold:</p>
 				<ol>
 				  <li>Each time you enter the cave, the first row of cards on the left is unlocked for exploration, as indicated by a golden key 🔑 on the back of the card.</li>
 				  <li>After flipping a card, the remaining cards in the same row become locked 🔒, while the cave's magic will unlock 🔓 the next row of cards based on your current position.</li>
-				  <li>If you find a gem, its point value will be added to your total score.</li>
-				  <li>The deeper you venture into the cave, the more gems you will accumulate. Keep an eye on your total score as you progress to determine how well your adventure is going.</li>
-				  <li>When you reach the end of the cave, you will ship your treasure off to GemSeekers Inc. At that time, the cave's magic will tally your final round score, updating the scoreboards for your accomplishments to date.</li>
+				  <li>If you find a <span style="color: rgb(34, 172, 214); font-weight: bold;">gem</span>, its point value will be added to your total score.</li>
+				  <li>The deeper you venture into the cave, the more <span style="color: rgb(34, 172, 214); font-weight: bold;">gems</span> you will accumulate. Keep an eye on your total score as you progress to determine how well your adventure is going.</li>
+				  <li>When you reach the end of the cave, you will ship your treasure off to <span style="color: rgb(34, 172, 214); font-weight: bold;">GemSeekers Inc.</span>, and the scoreboards will be updated showing your accomplishments to date.</li>
 				</ol>
 				<p>
-				  You will be given 10 chances to explore the cave. Your goal is to maximize the overall number of gems you take home at the end of your adventure. Your performance as an explorer will be evaluated using the total number of gems you bring back.
+				  You will be given 10 chances to explore the cave. Your goal is to send home as many total <span style="color: rgb(34, 172, 214); font-weight: bold;">gems</span> as you can.
 				</p>
 				<p>
 				  Are you ready to put your treasure-hunting skills to the test and uncover the hidden gems within the cave? Strap on your gear, grab your trusty flashlight, and prepare for the adventure of a lifetime!
@@ -41,7 +41,7 @@
 				<button id="continue-button">Continue</button>
 			</div>
 			<div id="contest-screen">
-				<h2>🏔️🔦 Welcome, daring explorer! 🔦🏔️</h2>
+				<h2><span style="color: rgb(255, 255, 255); font-weight: bold;">🏔️🔦 Welcome, daring explorer! 🔦🏔️</span></h2>
 				<p>
 				  To celebrate the launch of this beta, I am holding a contest to see who can get the highest score.
 				</p>
@@ -57,7 +57,7 @@
 				<p>If you would like to opt out of the contest but still play, press the Start Game (No Contest) button below.</p>
 				<button id="start-button">Start Game (No Contest)</button>
 				<p>🏆🌟Good luck, intrepid explorer! The fortune and glory of Deeper Paths await! 🌟🏆</p>
-			  </div>			  
+			</div>			  
 		</div>
 		<div id="error-box" class="error-box"></div>
 		<div id="message-box"></div>
@@ -99,7 +99,7 @@
 					</div>
 				</div>
 			</div>	  
-		  <div class="game-board">
+		<div class="game-board">
 			<div class="row" data-row="1">
 				<div class="card"></div>
 				<div class="card"></div>
@@ -168,6 +168,9 @@
 			  <div class="card"></div>
 			  <div class="card"></div>
 			</div>
+		</div>
+		<div class="rule-container">
+			<!-- rule container content here -->
 		</div>
 	  </main>
 	<footer>

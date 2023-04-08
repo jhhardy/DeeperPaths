@@ -1,11 +1,11 @@
 TODO:
 Add points to move data
 Add mute button
-Add rule change feature
-Add rule bar
-Fix weird click in middle bug (Caused by error bar)
+X Add rule change feature
+X Add rule bar
+X Fix weird click in middle bug (Caused by error bar)
+X Add new styles to end of round messages
 
 OPTIONAL:
 Add bar showing how close the user is to "passing"
 Add funcationality to import rulesets
-Consider allowing users to go wherever?!?!
