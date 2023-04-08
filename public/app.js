@@ -13,21 +13,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Defining constants and giving the cards values
-const cards = [
-  "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",
-  "A♠", "2♠", "3♠", "4♠", "5♠", "6♠", "7♠", "8♠", "9♠", "10♠", "J♠", "Q♠", "K♠",
-  "A♦", "2♦", "3♦", "4♦", "5♦", "6♦", "7♦", "8♦", "9♦", "10♦", "J♦", "Q♦", "K♦",
-  "A♣", "2♣", "3♣", "4♣", "5♣", "6♣", "7♣", "8♣", "9♣", "10♣", "J♣", "Q♣", "K♣"
-];
-let totalScore = 0;
-let suitScores = {
-  "♥": 0,
-  "♠": 0,
-  "♦": 0,
-  "♣": 0
-  };
-
 //********************LOADING WELCOME SCREEN*********************** */
 // Listen for start button on welcome screen
 function welcomeScreen() {
@@ -84,56 +69,117 @@ function listenForStartButton() {
 }
 
 //*********************PREPARING GAMEBOARD*********************** */
-  // Shuffle the cards using the Fisher-Yates algorithm
-  function shuffleDeck() {
-    for (let i = cards.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [cards[i], cards[j]] = [cards[j], cards[i]];
+  // Defining constants and giving the cards values
+  const cards = [
+    "A♥", "2♥", "3♥", "4♥", "5♥", "6♥", "7♥", "8♥", "9♥", "10♥", "J♥", "Q♥", "K♥",
+    "A♠", "2♠", "3♠", "4♠", "5♠", "6♠", "7♠", "8♠", "9♠", "10♠", "J♠", "Q♠", "K♠",
+    "A♦", "2♦", "3♦", "4♦", "5♦", "6♦", "7♦", "8♦", "9♦", "10♦", "J♦", "Q♦", "K♦",
+    "A♣", "2♣", "3♣", "4♣", "5♣", "6♣", "7♣", "8♣", "9♣", "10♣", "J♣", "Q♣", "K♣"
+  ];
+
+  let suitScores = {
+    "♥": 0,
+    "♠": 0,
+    "♦": 0,
+    "♣": 0
+    };
+
+    // Shuffle the cards using the Fisher-Yates algorithm
+    function shuffleDeck() {
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+      }
+
+  //Converts Unicode symbol into words
+  function assignCardSuit(cardElement, card) {
+    if (card.includes("♥")) {
+      cardElement.classList.add("heart");
+    } else if (card.includes("♠")) {
+      cardElement.classList.add("spade");
+    } else if (card.includes("♦")) {
+      cardElement.classList.add("diamond");
+    } else if (card.includes("♣")) {
+      cardElement.classList.add("club");
     }
+  }
+
+  //Develops scoring mechanism
+    const standardScoringRules = {
+      "A": 2,
+      "K": 1,
+      "Q": 1,
+      "J": 1,
+      "10": 1, /*this is the value for the 10's place*/
+      "9": 0,
+      "8": 0,
+      "7": 0,
+      "6": 0,
+      "5": 0,
+      "4": 0,
+      "3": 0,
+      "2": 0
+    };
+
+    const modifiedScoringRules = {
+      "A": 2,
+      "K": 2,
+      "Q": 2,
+      "J": 2,
+      "10": 2, /* this is the value for the 10's place */
+      "9": 2,
+      "8": 2,
+      "7": 2,
+      "6": 2,
+      "5": 2,
+      "4": 2,
+      "3": 2,
+      "2": 2
+    };
+    
+    // Assign each card a value and point value based on scoring system
+    const cardElements = document.querySelectorAll('.card');
+    function assignCardPoints(cardElement, card, scoringSystem, suitsScoring) {
+      let points = 0;
+      const cardRank = card.charAt(0) === "1" && card.charAt(1) === "0" ? "10" : card.charAt(0);
+      const cardSuit = cardRank === "10" ? card.charAt(2) : card.charAt(1);
+      if (suitsScoring === "allSuits" || suitsScoring === cardSuit) {
+        points = scoringSystem[cardRank] || 0;
+      }
+      cardElement.dataset.points = points;
     }
 
-//Converts Unicode symbol into words
-function assignCardSuit(cardElement, card) {
-  if (card.includes("♥")) {
-    cardElement.classList.add("heart");
-  } else if (card.includes("♠")) {
-    cardElement.classList.add("spade");
-  } else if (card.includes("♦")) {
-    cardElement.classList.add("diamond");
-  } else if (card.includes("♣")) {
-    cardElement.classList.add("club");
+    // Function to assign the appropriate scoring system
+    function assignCardValue(cardElement, card, scoringSystem, suitsScoring) {
+      cardElement.dataset.value = card;
+      cardElement.classList.add("card-invalid");
+      assignCardPoints(cardElement, card, scoringSystem, suitsScoring);
+      assignCardSuit(cardElement, card);
+    }
+
+  //Deals out cards and assigns them values according the scoring system and suit options
+  function dealCards(valueScoring, suitsScoring) {
+    cards.forEach((card, index) => {
+      const cardElement = cardElements[index];
+      assignCardValue(cardElement, card, valueScoring, suitsScoring);
+    });
   }
-}
 
-//Develops scoring mechanism
-function assignCardPoints(cardElement, card) {
-  let points;
-  if (card.startsWith("A")) {
-    points = 2;
-  } else if (card.startsWith("K") || card.startsWith("Q") || card.startsWith("J") || card.startsWith("10")) {
-    points = 1;
-  } else {
-    points = 0;
+  //Function that updates the rule container to display current rule set to the user
+  function updateRuleContainer(activeScoring) {
+    const ruleContainer = document.querySelector('.rule-container');
+    
+    if (activeScoring === standardScoringRules) {
+      ruleContainer.innerHTML = '<span class="purple-text">A: 2 points</span>&nbsp;<span class="green-text">K, Q, J, and 10s: 1 point</span>&nbsp;<span class="red-text">All other cards: 0 points</span>';
+    } else if (activeScoring === modifiedScoringRules) {
+      const suitNames = ["Spades", "Hearts", "Diamonds", "Clubs"];
+      const activeSuitIndex = ["♠", "♥", "♦", "♣"].indexOf(activeSuits);
+      const activeSuitName = suitNames[activeSuitIndex];
+      ruleContainer.innerHTML = `<span class="purple-text">${activeSuitName} ${activeSuits}: 2 points</span>,&nbsp;<span class="red-text">All other cards: 0 points</span>`;
+    }
   }
-  cardElement.dataset.points = points;
-}
 
-// Assign each card a value and point value based on scoring system
-const cardElements = document.querySelectorAll('.card');
-function assignCardValue(cardElement, card) {
-  cardElement.dataset.value = card;
-  cardElement.classList.add("card-invalid");
-  assignCardPoints(cardElement, card);
-  assignCardSuit(cardElement, card);
-}
-
-//Deals out cards and assigns them values
-function dealCards() {
-  cards.forEach((card, index) => {
-    const cardElement = cardElements[index];
-    assignCardValue(cardElement, card);
-  });
-}
 
 //*********************STARTING GAME*********************** */
 // Generate User ID
@@ -144,6 +190,7 @@ function generateUserID() {
 }
 
 // Reset GameBoard
+let totalScore = 0;
 function resetGameBoard() {
   // Remove the end game message box if it exists
     const messageBox = document.querySelector('.message-box');
@@ -180,11 +227,14 @@ function resetGameBoard() {
     card.classList.add('card-valid');
   });
 
+  // UpdatingRuleSetContainer
+  updateRuleContainer(activeScoring)
+
   // Updating scoreboard
   updateScoreboard();
 }
 
-// Starting game
+// Writing user data to the database on the first game
 let userID;
 function writeUserData() {
   const userEmailAddress = document.getElementById("email").value || "No Contest";
@@ -197,7 +247,10 @@ function writeUserData() {
   db.ref(`users/${userID}/userData/Email`).set(userEmailAddress);
 }
 
+// Starting game
 let currentGame = 0;
+let activeSuits;
+let activeScoring;
 function startGame() {
   if (currentGame === 0) {
     shuffleDeck();
@@ -205,10 +258,12 @@ function startGame() {
     writeUserData();
     const overlay = document.getElementById("overlay");
     overlay.style.display = "none";
+    activeSuits = "allSuits";
+    activeScoring = standardScoringRules;
   }
 
   currentGame++;
-  dealCards();
+  dealCards(activeScoring, activeSuits);
   gameStarted = true;
   resetGameBoard();
   lastMoveTime = new Date().getTime(); //Resting move time on start of game
@@ -287,7 +342,7 @@ function startGame() {
       if (points === 1) {
         const audio = new Audio('ClinkingCoin.wav');
         audio.play();
-      } else if (points === 2) {
+      } else if (points > 1) {
         const audio = new Audio('ClinkingCoins.wav');
         audio.play();
       }
@@ -444,14 +499,51 @@ function updateSuitTracker(gameNumber, suitScores) {
 }
 
 // Show end round message
-function showEndRoundMessage(score) {
+function showEndRoundMessage(score, isRuleChange) {
+  const messageBox = document.createElement('div');
+  messageBox.classList.add('message-box');
+  if (isRuleChange) {
+    messageBox.innerHTML = `
+      <h2>Round Over!</h2>
+      <p>Your score for the round was: ${score}</p>
+      <div class="button-container">
+      <button onclick="showRuleChangeMessage()">BIG NEWS!</button>
+      </div>
+    `;
+  } else {
+    messageBox.innerHTML = `
+      <h2>Round Over!</h2>
+      <p>Your score for the round was: ${score}</p>
+      <div class="button-container">
+        <button onclick="startGame()">We go again!</button>
+      </div>
+    `;
+  }
+  document.body.appendChild(messageBox);
+}
+
+// Show the rule change message
+function showRuleChangeMessage() {
+  // Remove the existing message box (if any)
+  const existingMessageBox = document.querySelector('.message-box');
+  if (existingMessageBox) {
+    existingMessageBox.remove();
+  }
+
+  //Update the Rule Container
+  updateRuleContainer(activeScoring)
+  
+  // Create and append the new message box
   const messageBox = document.createElement('div');
   messageBox.classList.add('message-box');
   messageBox.innerHTML = `
-    <h2>Round Over!</h2>
-    <p>Your score for the round was: ${score}</p>
+    <h2><span style="color: rgb(255, 255, 255); font-weight: bold;">Big news explorers!</span></h2>
+    <p>The market has changed!</p>
+    <p><span style="color: rgb(34, 172, 214); font-weight: bold;">Gemseekers INC</span> will now only pay for <span style="color: rgb(182, 179, 17); font-weight: bold;">${activeSuits} cards</span>.</p>
+    <p>However, each <span style="color: rgb(182, 179, 17); font-weight: bold;">${activeSuits} card</span> is now worth <span style="color: rgb(156, 102, 241); font-weight: bold;">2 points!</span></p>
+    <p><span style="color: rgb(228, 51, 51); font-weight: bold;">ALL other cards</span> are now worth <span style="color: rgb(228, 51, 51); font-weight: bold;">0 points!</span></p>
     <div class="button-container">
-      <button onclick="startGame()">We go again!</button>
+      <button onclick="startGame()">Understood! Let's go!</button>
     </div>
   `;
   document.body.appendChild(messageBox);
@@ -469,7 +561,6 @@ function showEndGameMessage() {
   document.body.appendChild(messageBox);
 }
 
-
 // Write stats to database
 function writeStatsToDatabase(gameNumber) {
   db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
@@ -479,6 +570,19 @@ function writeStatsToDatabase(gameNumber) {
   db.ref(`users/${userID}/stats/PercentUnexplored_Game${gameNumber}`).set(percentUnexplored); // Write the percent unexplored for the game to the database
 
   db.ref(`users/${userID}/moves`).set(moves); // Add the move times for the game to the existing array in the databas
+}
+
+// Displays the correct message to transition to next game
+function transitionMessages(totalScore) {
+  if (currentGame === 5) {
+    activeScoring = modifiedScoringRules;
+    activeSuits = ["♠", "♥", "♦", "♣"][Math.floor(Math.random() * 4)]; //Randomly sets on of the suits to be the active suit.
+    showEndRoundMessage(totalScore, true);
+  } else if (currentGame === 10) {
+    showEndGameMessage();
+  } else {
+    showEndRoundMessage(totalScore, false);
+  }
 }
 
 // Execute ending game functions when called
@@ -493,14 +597,11 @@ function endGame() {
   updateScoreTracker(currentGame, totalScore);   // Append scores to the scoretracker
   updateSuitTracker(currentGame, suitScores);   // Append scores to the suittracker
 
-  writeStatsToDatabase(currentGame) // Writing stats to database
-  
-  //Starting up next game
-  if (currentGame === 10) {
-    showEndGameMessage(); // Call the showEndGameMessage function if it's the last game
-  } else {
-    showEndRoundMessage(totalScore); // Call the showEndRoundMessage function if it's not the last game
-  }
+  // Write stats to database
+  writeStatsToDatabase(currentGame);
+
+  //Display end of game messages;
+  transitionMessages(totalScore);
 }
 
 //*********************EVENT LISTENERS*********************** */
@@ -533,9 +634,13 @@ cardElements.forEach((cardElement) => {
       const message = "Card is not valid! Look for the golden keys! 🔑";
       const errorBox = document.querySelector(".error-box");
       errorBox.innerHTML = message;
-      errorBox.style.opacity = 1;
+      errorBox.classList.add("fade-in"); // Add the fade-in class to trigger the animation
       setTimeout(() => {
-        errorBox.style.opacity = 0;
+        errorBox.classList.remove("fade-in"); // Remove the fade-in class to trigger the fade-out animation
+        errorBox.classList.add("fade-out"); // Add the fade-out class to trigger the animation
+        setTimeout(() => {
+          errorBox.classList.remove("fade-out"); // Remove the fade-out class to hide the error box completely
+        }, 1000);
       }, 2000);
     }
   });

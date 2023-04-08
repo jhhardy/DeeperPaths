@@ -1,7 +1,7 @@
 /* General styles */
 header {
   background-color: black;
-  padding: 20px 20px; /* 20px padding on top and bottom */
+  padding: 20px 20px;
   margin-bottom: 5px;
 }
 
@@ -9,15 +9,8 @@ header h1 {
   color: orange;
   font-family: 'Palatino Linotype', serif;
   font-size: 48px;
-  text-align: left;
+  text-align: center;
   margin: 0;
-}
-
-.title {
-  color: rgb(189, 102, 2);
-  font-family: 'Georgia', serif;
-  font-size: 48px;
-  text-shadow: 2px 2px 5px rgba(189, 111, 10, 0.5);
 }
 
 body {
@@ -44,10 +37,15 @@ body {
   z-index: 1;
 }
 
+footer {
+  color: white;
+  font-family: 'Palatino Linotype', serif;
+}
+
 /* Welcome and contest screen styles */
 #welcome-screen, #contest-screen {
-  width: 70%; /* Set the desired width here (e.g., 70% of the parent container) */
   max-width: 850px; /* Set a maximum width to prevent the box from becoming too large on wide screens */
+  width: 70%; /* Set the desired width here (e.g., 70% of the parent container) */
   background-color: #2c2c2c; /* Set the background color to dark grey */
   padding: 20px;
   border-radius: 10px;
@@ -60,17 +58,44 @@ body {
 #welcome-screen h2, #contest-screen h2 {
   margin-top: 0;
   font-size: 30px;
+  font-weight: bold;
 }
 
 #welcome-screen p, #contest-screen p {
   margin: 10px 0;
   text-align: left; /* Add this line to make the body text left justified */
-  font-size: 20px;
+  font-size: 18px;
 }
 
 #welcome-screen ul, #welcome-screen ol, #contest-screen ul, #contest-screen ol {
   text-align: left;
+  font-size: 18px;
+}
+
+#contest-screen form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#contest-screen form input[type="email"] {
+  background-color: white;
+  color: rgb(5, 5, 5);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'Palatino Linotype', serif;
   font-size: 20px;
+  margin-bottom: 10px;
+}
+
+#contest-screen p:last-child {
+  text-align: center;
+}
+
+#contest-screen {
+  display: none; /* Hides the contest screen initially */
 }
 
 /* Button styles with gradients */
@@ -99,32 +124,6 @@ body {
   background-color: rgb(150, 80, 0);
 }
 
-#contest-screen form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#contest-screen form input[type="email"] {
-  background-color: white;
-  color: rgb(5, 5, 5);
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-family: 'Palatino Linotype', serif;
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-
-#contest-screen p:last-child {
-  text-align: center;
-}
-
-#contest-screen {
-  display: none; /* Add this line to hide the contest screen initially */
-}
-
 /* Card styles */
 .card {
   background-image: none;
@@ -141,20 +140,22 @@ body {
   line-height: 90px;
   cursor: pointer;
   text-shadow: -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 1px 1px 0 #FFF;
+  user-select: none;
 }
 
-.card-valid {
-  background-image: url('./card-back-key.png');
-  background-size: cover;
-  background-position: center;
-  }
-  
 .card-invalid {
   background-image: url('./card-back.png');
   background-size: cover;
   background-position: center;
   }
 
+.card-valid {
+  background-image: url('./card-back-key.png');
+  background-size: cover;
+  background-position: center;
+  user-select: none;
+  }
+  
 .card-flipped {
     background-color: white;
   }
@@ -186,27 +187,21 @@ body {
 }
 
 /* Container styles */
-
 .content-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: center;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto minmax(0, 1fr) 50px;
   background-color: black;
   padding: 20px;
   width: 1150px;
-  height: 780px;
+  height: 820px;
   margin: auto;
   position: relative;
   background-image: url('./background.jpg');
+  border: 3px solid rgb(189, 102, 2);
 }
 
 .scoreboard-container {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
   margin-left: 20px;
   margin-right: 20px;
 }
@@ -217,8 +212,6 @@ body {
   grid-template-rows: repeat(1, 1fr);
   grid-template-columns: repeat(8, 1fr);
   gap: 30px;
-  margin-left: 225px;
-  margin-top: 10px;
 }
 
 .game-board .row:first-child {
@@ -227,12 +220,9 @@ body {
   align-items: center;
 }
 
-.game-board .row:first-child .card:first-child {
-  margin-top: 20px;
-}
-
+.game-board .row:first-child .card:first-child,
 .game-board .row:first-child .card:last-child {
-  margin-bottom: 20px;
+  margin: 20px 0;
 }
 
 /* Scoreboard and score tracker styles */
@@ -240,8 +230,8 @@ body {
   font-size: 22px;
   font-weight: bold;
   padding: 5px;
-  background-color: #eeeeee;
-  border: 2px solid #333;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 3px solid rgb(189, 102, 2);
   border-radius: 5px;
   text-align: center;
   width: 175px;
@@ -252,12 +242,7 @@ body {
   font-size: 18px;
 }
 
-.total-score {
-  font-weight: bold;
-  text-shadow: 1px 1px 1px black;
-}
-
-.average-score {
+.total-score, .average-score {
   font-weight: bold;
   text-shadow: 1px 1px 1px black;
 }
@@ -272,19 +257,37 @@ body {
   text-align: left;
 }
 
-.score-above-threshold {
-  color: green;
+/* Rule box styles */
+.rule-container {
+  font-size: 18px;
+  font-weight: bold;
+  font-family: 'Palatino Linotype', serif;
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.8); /* Set the background color to dark grey */
+  color: white;
+  border: 3px solid rgb(189, 102, 2);
+  border-radius: 5px;
+  width: 60%;
+  height: 50px;
+  grid-row: 2;
+  grid-column: 2;
+  justify-self: center; /* horizontally center the box within the grid cell */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* horizontally center the content */
+  text-align: center;
 }
 
-.score-below-threshold {
-  color: red;
+.rule-container .purple-text {
+  color: rgb(156, 102, 241);
 }
 
-/* Disabled button styles */
-#start-btn.disabled {
-  background-color: gray;
-  cursor: not-allowed;
-  opacity: 0.6;
+.rule-container .green-text {
+  color: rgb(66, 190, 41);
+}
+
+.rule-container .red-text {
+  color: rgb(228, 51, 51);
 }
 
 /* Message box styles */
@@ -296,40 +299,29 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: white;
-  border: 1px solid black;
-  padding: 20px 10px;
-}
-
-.message-box .button-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 0.5rem;
+  background-color: #2c2c2c; 
+  padding: 20px;
+  border-radius: 10px;
+  border: 3px solid rgb(189, 102, 2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  font-family: 'Palatino Linotype', serif;
 }
 
 .message-box .button-container button {
   background-color: rgb(189, 102, 2);
   color: white;
   font-size: 1.2rem;
-  padding: 0.5rem .5rem;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 0.5rem;
+  transition: background-color 0.2s ease-out;
 }
 
-.game-board .row:first-child .card:first-child {
-  margin-top: 20px;
+.message-box .button-container button:hover {
+  background: linear-gradient(to bottom, #B54B00, #FF6D00);
+  background-color: rgb(150, 80, 0);
 }
-
-.game-board .row:first-child .card:last-child {
-  margin-bottom: 20px;
-}
-
-.game-board .row:first-child {
-  display: grid;
-  grid-template-rows: repeat(3, 1fr);
-  align-items: center;
-}
-
 
 /* Error message box styles */
 .error-box {
@@ -347,15 +339,19 @@ body {
   font-weight: bold;
   color: rgb(189, 102, 2);  
   text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+  display: none; /* Set display to none by default */
 }
 
 .error-box.fade-in {
-  animation: fade-in 0.5s ease-in-out forwards;
+  animation: fade-in .2s ease-in-out forwards;
+  display: block; /* Set display to block when fading in */
 }
 
 .error-box.fade-out {
   animation: fade-out 1s ease-in-out forwards;
+  display: none; /* Set display to none when fading out */
 }
+
 
 @keyframes fade-in {
   from {
@@ -375,31 +371,183 @@ body {
   }
 }
 
-.invisible {
-  opacity: 0;
-  visibility: hidden;
-}
 
-
-/* Mobile only code */
+/* Mobile styles */
 @media only screen and (max-width: 768px) {
-  .content-container {
-    width: 100%;
+  /* Adjust font sizes and spacing */
+  html,
+  body {
+    background-color: black;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+
+  header {
+    background-color: black;
+    padding: 5px 5px;
+    margin-bottom: 5px;
+    order: 0;
+  }
+
+  header h1 {
+    background-color: rgba(0, 0, 0, 0.164);
+    font-size: 36px;
     padding: 10px;
   }
-}
 
-@media only screen and (max-width: 768px) {
-  .title {
-    font-size: 36px;
+  .card {
+    font-size: 1.5rem;
+    height: 60px;
+    width: 40px;
+    margin: 5px;
+    line-height: 60px;
   }
 
-  .scoreboard, .scoretracker, .suittracker {
+  /* Welcome and contest screen styles for mobile */
+  #welcome-screen, #contest-screen {
+    max-width: 850px;
+    width: 90%;
+    background-color: #2c2c2c;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    text-align: flex-start;
+    color: #ffffff;
+    font-family: 'Palatino Linotype', serif;
+    margin: 0 auto;
+    margin-top: 20px;
+  }
+
+  #welcome-screen h2, #contest-screen h2 {
+    margin-top: 0;
+    font-size: 30px;
+    font-weight: bold;
+  }
+
+  #welcome-screen p, #contest-screen p {
+    margin: 10px 0;
+    text-align: left;
+    font-size: 18px;
+  }
+
+  #welcome-screen ul, #welcome-screen ol, #contest-screen ul, #contest-screen ol {
+    text-align: left;
+    font-size: 18px;
+  }
+
+  #contest-screen form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #contest-screen form input[type="email"] {
+    background-color: white;
+    color: rgb(5, 5, 5);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Palatino Linotype', serif;
     font-size: 20px;
-    padding: 3px;
+    margin-bottom: 10px;
   }
 
+  #contest-screen p:last-child {
+    text-align: center;
+  }
+
+  #contest-screen {
+    display: none;
+  }
+
+  /* Adjust content container */
+  .content-container {
+    width: 90%;
+    height: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Adjust message box */
   .message-box {
     font-size: 20px;
+    padding: 10px;
+  }
+
+  /* Adjust gameboard */
+  .game-board {
+    order: 2;
+    gap: 10px;
+  }
+
+  /* Adjust scoreboard and score tracker */
+  .scoreboard-container {
+    order: 4;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .scoreboard, .suittracker  {
+    font-size: 18px;
+    align-self: flex-start;
+  }
+  .total-score, .average-score {
+    font-size: 20px;
+  }
+
+  .suittracker {
+    font-size: 18px;
+    text-align: center;
+    align-self: flex-start;
+    margin-top: auto;
+    margin-bottom: 0;
+  }
+  .suittracker-container {
+    align-items: flex-start;
+  }
+
+    /* Adjust rule container and score tracker */
+  .rule-container {
+    font-size: 14px;
+    height: 25px;
+    order: 3;
+    justify-self: center; /* horizontally center the box within the grid cell */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* horizontally center the content */
+    text-align: center;
+  }
+
+  /* Adjust error message box */
+  .error-box {
+    font-size: 2rem;
+  }
+
+  /* Hide contest screen */
+  #contest-screen {
+    display: none;
+  }
+
+  /* Adjust button styles */
+  #welcome-screen button,
+  #contest-screen button,
+  #submit-email-button {
+    padding: 5px 10px;
+    font-size: 18px;
+  }
+
+  /* Adjust footer */
+  footer {
+    font-size: 18px;
   }
 }
+
