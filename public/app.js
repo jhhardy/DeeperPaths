@@ -1,4 +1,8 @@
 // Firebase initialization
+import { initializeApp } from 'firebase/app';
+import { getDatabase } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
+
 const firebaseConfig = {
   apiKey: "AIzaSyDIcSlBjSKVY-SJmDh_RtRXuuB29LdpRyQ",
   authDomain: "deeper-paths.firebaseapp.com",
@@ -10,8 +14,8 @@ const firebaseConfig = {
   measurementId: "G-LC45VYLJ4C"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 //********************LOADING WELCOME SCREEN*********************** */
 // Listen for start button on welcome screen
@@ -182,12 +186,6 @@ function listenForStartButton() {
 
 
 //*********************STARTING GAME*********************** */
-// Generate User ID
-function generateUserID() {
-  const randomChars = Math.random().toString(36).substring(2, 8);
-  return randomChars;
-}
-
 // Reset GameBoard
 let totalScore = 0;
 function resetGameBoard() {
@@ -226,16 +224,13 @@ function resetGameBoard() {
     card.classList.add('card-valid');
   });
 
-  // UpdatingRuleSetContainer
   updateRuleContainer(activeScoring)
-
-  // Updating scoreboard
   updateScoreboard();
 }
 
 // Writing user data to the database on the first game
 let userID;
-function writeUserData() {
+function writeUserData(userID) {
   const userEmailAddress = document.getElementById("email").value || "No Contest";
   const currentDate = new Date();
   const date = currentDate.toDateString();
@@ -250,23 +245,37 @@ function writeUserData() {
 let currentGame = 0;
 let activeSuits;
 let activeScoring;
+
 function startGame() {
   if (currentGame === 0) {
-    shuffleDeck();
-    userID = generateUserID();
-    writeUserData();
-    const overlay = document.getElementById("overlay");
-    overlay.style.display = "none";
-    activeSuits = "allSuits";
-    activeScoring = standardScoringRules;
-  }
+    getAuth().signInAnonymously()
+      .then((userCredential) => {
+        const userID = userCredential.user.uid;
+        writeUserData(userID);
+        shuffleDeck();
+        const overlay = document.getElementById("overlay");
+        overlay.style.display = "none";
+        activeSuits = "allSuits";
+        activeScoring = standardScoringRules;
 
-  currentGame++;
-  dealCards(activeScoring, activeSuits);
-  gameStarted = true;
-  resetGameBoard();
-  lastMoveTime = new Date().getTime(); //Resting move time on start of game
+        currentGame++;
+        dealCards(activeScoring, activeSuits);
+        gameStarted = true;
+        resetGameBoard();
+        lastMoveTime = new Date().getTime(); // Resting move time on start of game
+      })
+      .catch((error) => {
+        console.error("Failed to sign in anonymously:", error);
+      });
+  } else {
+    currentGame++;
+    dealCards(activeScoring, activeSuits);
+    gameStarted = true;
+    resetGameBoard();
+    lastMoveTime = new Date().getTime(); // Resting move time on start of game
+  }
 }
+
 
 //*********************GAME LOGIC AND RULES*********************** */
 // STEP 1: Flip card
@@ -543,7 +552,7 @@ function showRuleChangeMessage() {
     <p>The market has changed!</p>
     <p><span style="color: rgb(34, 172, 214); font-weight: bold;">Gemseekers INC</span> will now only pay for <span style="color: rgb(182, 179, 17); font-weight: bold;">${activeSuits} cards</span>.</p>
     <p>However, <span style="color: rgb(182, 179, 17); font-weight: bold;">K, Q, J, and 10s of ${activeSuits}s</span> are now worth <span style="color: rgb(156, 102, 241); font-weight: bold;">2 points!</span></p>
-    <p>Also, <span style="color: rgb(182, 179, 17); font-weight: bold;">9, 8, 7, 6, 5, 4, 3 ,2 of ${activeSuits}s</span> are now worth <span style="color: rgb(66, 190, 41); font-weight: bold;">1 points!</span></p>
+    <p>Also, <span style="color: rgb(182, 179, 17); font-weight: bold;">9, 8, 7, 6, 5, 4, 3 ,2 of ${activeSuits}s</span> are now worth <span style="color: rgb(66, 190, 41); font-weight: bold;">1 point!</span></p>
     <p><span style="color: rgb(228, 51, 51); font-weight: bold;">ALL other suits</span> are now worth <span style="color: rgb(228, 51, 51); font-weight: bold;">0 points!</span></p>
     <div class="button-container">
       <button onclick="startGame()">Understood! Let's go!</button>
