@@ -128,14 +128,14 @@ function listenForStartButton() {
       "Q": 2,
       "J": 2,
       "10": 2, /* this is the value for the 10's place */
-      "9": 2,
-      "8": 2,
-      "7": 2,
-      "6": 2,
-      "5": 2,
-      "4": 2,
-      "3": 2,
-      "2": 2
+      "9": 1,
+      "8": 1,
+      "7": 1,
+      "6": 1,
+      "5": 1,
+      "4": 1,
+      "3": 1,
+      "2": 1
     };
     
     // Assign each card a value and point value based on scoring system
@@ -176,7 +176,7 @@ function listenForStartButton() {
       const suitNames = ["Spades", "Hearts", "Diamonds", "Clubs"];
       const activeSuitIndex = ["♠", "♥", "♦", "♣"].indexOf(activeSuits);
       const activeSuitName = suitNames[activeSuitIndex];
-      ruleContainer.innerHTML = `<span class="purple-text">${activeSuitName} ${activeSuits}: 2 points</span>,&nbsp;<span class="red-text">All other cards: 0 points</span>`;
+      ruleContainer.innerHTML = `<span class="purple-text">A, K, Q, J, and 10s of ${activeSuitName} ${activeSuits}: 2 points</span>&nbsp;<span class="green-text">9, 8, 7, 6, 5, 4, 3, 2 of ${activeSuitName} ${activeSuits}: 1 point</span>&nbsp;<span class="red-text">All other cards: 0 points</span>`;
     }
   }
 
@@ -184,9 +184,8 @@ function listenForStartButton() {
 //*********************STARTING GAME*********************** */
 // Generate User ID
 function generateUserID() {
-  const timestamp = Date.now().toString();
   const randomChars = Math.random().toString(36).substring(2, 8);
-  return timestamp + randomChars;
+  return randomChars;
 }
 
 // Reset GameBoard
@@ -215,7 +214,7 @@ function resetGameBoard() {
     card.classList.remove('card-locked', 'card-valid', 'card-flipped'); // Removing all prior classes from the card
     card.classList.add('card-invalid'); // Reseting the card stats to invalid
     card.textContent = ''; // Clearing all card text content
-    if (card.classList.contains('card-selected')) { // Showing text content for all cards assigned card-selected classicfication ***CAN CHANGE THIS TO DETERMINE HOW LONG EACH CARD WILL SHOW THIS INFORMATION***
+    if (card.classList.contains('card-selected')) { // Showing text content for all cards assigned card-selected classicfication
       card.textContent = card.dataset.value; 
     }
   });
@@ -278,18 +277,19 @@ function startGame() {
     let lastMoveTime = new Date().getTime();
  
       // Function for recording move time
-      function recordMoveData(isExploratory) {
+      function recordMoveData(isExploratory, cardElement) {
         const now = new Date();
         const moveTime = now.getTime() - lastMoveTime;
         lastMoveTime = now.getTime();
       
-        // Record move time, type, and move number in an array
+        // Record move time, type, move number, and data-points in an array
         moves.push({
           moveNumber: moves.length + 1,
           time: moveTime,
-          type: isExploratory ? 'exploratory' : 'exploitative'
+          type: isExploratory ? 'exploratory' : 'exploitative',
+          points: cardElement.dataset.points
         });
-      } 
+      }
 
     // Function for measuring exploratory vs. exploitative behavior
       let exploratoryMoves = 0;
@@ -307,14 +307,14 @@ function startGame() {
           exploratoryMoves++;
           unexploredCards--;
           percentUnexplored = (unexploredCards / allCards.length) * 100;
-          recordMoveData(true);
+          recordMoveData(true, cardElement);
       
         // If move is exploitative
         } else {
           const flippedCardValues = flippedCards.map(card => card.dataset.value);
           if (flippedCardValues.includes(cardValue)) {
             exploitativeMoves++;
-            recordMoveData(false);
+            recordMoveData(false, cardElement);
           }
         }
       
@@ -334,17 +334,19 @@ function startGame() {
     function updateScores(cardElement) {
       const suit = cardElement.dataset.value.slice(-1);   // Get the suit and points data from the card element
       const points = parseInt(cardElement.dataset.points);
-    
+
       totalScore += points;   // Update the total score and suit scores objects
       suitScores[suit] += points;
-    
+
       // Check if points were scored and play sound if so
-      if (points === 1) {
-        const audio = new Audio('ClinkingCoin.wav');
-        audio.play();
-      } else if (points > 1) {
-        const audio = new Audio('ClinkingCoins.wav');
-        audio.play();
+      if (isSoundOn) {
+        if (points === 1) {
+          const audio = new Audio('ClinkingCoin.wav');
+          audio.play();
+        } else if (points > 1) {
+          const audio = new Audio('ClinkingCoins.wav');
+          audio.play();
+        }
       }
     }
 
@@ -540,8 +542,9 @@ function showRuleChangeMessage() {
     <h2><span style="color: rgb(255, 255, 255); font-weight: bold;">Big news explorers!</span></h2>
     <p>The market has changed!</p>
     <p><span style="color: rgb(34, 172, 214); font-weight: bold;">Gemseekers INC</span> will now only pay for <span style="color: rgb(182, 179, 17); font-weight: bold;">${activeSuits} cards</span>.</p>
-    <p>However, each <span style="color: rgb(182, 179, 17); font-weight: bold;">${activeSuits} card</span> is now worth <span style="color: rgb(156, 102, 241); font-weight: bold;">2 points!</span></p>
-    <p><span style="color: rgb(228, 51, 51); font-weight: bold;">ALL other cards</span> are now worth <span style="color: rgb(228, 51, 51); font-weight: bold;">0 points!</span></p>
+    <p>However, <span style="color: rgb(182, 179, 17); font-weight: bold;">K, Q, J, and 10s of ${activeSuits}s</span> are now worth <span style="color: rgb(156, 102, 241); font-weight: bold;">2 points!</span></p>
+    <p>Also, <span style="color: rgb(182, 179, 17); font-weight: bold;">9, 8, 7, 6, 5, 4, 3 ,2 of ${activeSuits}s</span> are now worth <span style="color: rgb(66, 190, 41); font-weight: bold;">1 points!</span></p>
+    <p><span style="color: rgb(228, 51, 51); font-weight: bold;">ALL other suits</span> are now worth <span style="color: rgb(228, 51, 51); font-weight: bold;">0 points!</span></p>
     <div class="button-container">
       <button onclick="startGame()">Understood! Let's go!</button>
     </div>
@@ -549,7 +552,7 @@ function showRuleChangeMessage() {
   document.body.appendChild(messageBox);
 }
 
-// Show end round message
+// Show end game message
 function showEndGameMessage() {
   const messageBox = document.createElement('div');
   messageBox.classList.add('message-box');
@@ -559,15 +562,26 @@ function showEndGameMessage() {
     <p>Final score: ${TotalScoreAcrossGames}</p>
   `;
   document.body.appendChild(messageBox);
+
+  // Set the text content of each card to its data value
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card => {
+    card.textContent = ''; // Clearing all card text content
+    if (card.classList.contains('card')) { // Showing text content for all cards assigned card-selected classicfication
+      card.textContent = card.dataset.value; 
+    }
+  });
+
+  db.ref(`users/${userID}/stats/FinalScore`).set(TotalScoreAcrossGames); // If its the last game, write the final score for the game to the database
 }
 
 // Write stats to database
 function writeStatsToDatabase(gameNumber) {
-  db.ref(`users/${userID}/stats/TotalScore_Game${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
-  db.ref(`users/${userID}/stats/AvgTotalScore_Game${gameNumber}`).set(averageTotalScores); // Write the average totalscore for the game to the database
-  db.ref(`users/${userID}/stats/Exploration_Game${gameNumber}`).set(exploratoryMoves); // Write the exploration behavior for the game to the database
-  db.ref(`users/${userID}/stats/Exploitation_Game${gameNumber}`).set(exploitativeMoves); // Write the exploitative behavior for the game to the database
-  db.ref(`users/${userID}/stats/PercentUnexplored_Game${gameNumber}`).set(percentUnexplored); // Write the percent unexplored for the game to the database
+  db.ref(`users/${userID}/stats/TotalScore_Game_${gameNumber}`).set(totalScore); // Write the totalscore for the game to the database
+  db.ref(`users/${userID}/stats/AvgTotalScore_Game_${gameNumber}`).set(averageTotalScores); // Write the average totalscore for the game to the database
+  db.ref(`users/${userID}/stats/Exploration_Game_${gameNumber}`).set(exploratoryMoves); // Write the exploration behavior for the game to the database
+  db.ref(`users/${userID}/stats/Exploitation_Game_${gameNumber}`).set(exploitativeMoves); // Write the exploitative behavior for the game to the database
+  db.ref(`users/${userID}/stats/PercentUnexplored_Game_${gameNumber}`).set(percentUnexplored); // Write the percent unexplored for the game to the database
 
   db.ref(`users/${userID}/moves`).set(moves); // Add the move times for the game to the existing array in the databas
 }
@@ -608,6 +622,26 @@ function endGame() {
 // Loading game
 window.addEventListener('load', function() {
   welcomeScreen()
+});
+
+// Add sound on/off toggles
+const soundToggle = document.querySelector('.sound-toggle');
+let isSoundOn = true;
+
+soundToggle.addEventListener('click', () => {
+  if (isSoundOn) {
+    soundToggle.classList.remove('on');
+    soundToggle.classList.add('off');
+    soundToggle.textContent = 'Sound off 🔊';
+    // Your code to mute the sound goes here
+  } else {
+    soundToggle.classList.remove('off');
+    soundToggle.classList.add('on');
+    soundToggle.textContent = 'Sound on 🔊';
+    // Your code to unmute the sound goes here
+  }
+  
+  isSoundOn = !isSoundOn;
 });
 
 // Add click event listener to each card element

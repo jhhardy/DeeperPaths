@@ -1,6 +1,6 @@
 TODO:
-Add points to move data
-Add mute button
+X Add points to move data
+X Add mute button
 X Add rule change feature
 X Add rule bar
 X Fix weird click in middle bug (Caused by error bar)

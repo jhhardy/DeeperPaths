@@ -257,6 +257,45 @@ footer {
   text-align: left;
 }
 
+/* Sound container styles */
+.sound-toggle-container {
+  display: flex;
+  justify-content: center;
+}
+
+.sound-toggle {
+  font-size: 18px;
+  font-weight: bold;
+  font-family: 'Palatino Linotype', serif;
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.8); /* Set the background color to dark grey */
+  color:green;
+  border: 3px solid rgb(189, 102, 2);
+  border-radius: 5px;
+  width: 60%;
+  height: 50px;
+  grid-row: 2;
+  grid-column: 2;
+  justify-self: center; /* horizontally center the box within the grid cell */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* horizontally center the content */
+  text-align: center;
+}
+
+.sound-toggle.off {
+  color: red;
+}
+
+.sound-toggle.on {
+  color: green;
+}
+
+.sound-toggle:hover {
+  background: linear-gradient(to bottom, #B54B00, #FF6D00);
+  background-color: rgba(150, 80, 0, 0.205);
+}
+
 /* Rule box styles */
 .rule-container {
   font-size: 18px;
@@ -299,7 +338,7 @@ footer {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #2c2c2c; 
+  background-color: rgba(44,44,44,0.95); 
   padding: 20px;
   border-radius: 10px;
   border: 3px solid rgb(189, 102, 2);
@@ -473,6 +512,7 @@ footer {
     padding: 10px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
   }
 
   /* Adjust message box */
